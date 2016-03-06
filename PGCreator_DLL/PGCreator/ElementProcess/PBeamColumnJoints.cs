@@ -16,7 +16,7 @@ namespace P58_Loss.ElementProcess
         private static class JointsRecognizer
         {
             private static Element _column;
-            private static IList<Element> _intersectedBeams = null;
+            private static List<Element> _intersectedBeams = new List<Element>(8);
             private static BoundingBoxXYZ _columnBox;
             private static int _bottom_floor, _top_floor;
             private static int[,] _num = new int[2,_numLevel];                      //Temp Recorder : [direction, levels]
@@ -28,14 +28,22 @@ namespace P58_Loss.ElementProcess
             {
                 FilteredElementCollector tempCollector = new FilteredElementCollector(_doc);
                 ElementStructuralTypeFilter BeamFilter = new ElementStructuralTypeFilter(StructuralType.Beam);
-                //Do not consider lowest beams
+                _intersectedBeams.Clear();
+                //Do not consider lower beams
                 XYZ left = new XYZ(_columnBox.Min.X - ErrorCTRL_BoundingBox,
-                    _columnBox.Min.Y - ErrorCTRL_BoundingBox, 0.5 * (_myLevel.GetElavation(_bottom_floor) + _myLevel.GetElavation(_bottom_floor + 1)));
+                    _columnBox.Min.Y - ErrorCTRL_BoundingBox, 0.5 * (_myLevel.GetElevation(_bottom_floor) + _myLevel.GetElevation(_bottom_floor + 1)));
                 XYZ right = new XYZ(_columnBox.Max.X + ErrorCTRL_BoundingBox,
                     _columnBox.Max.Y + ErrorCTRL_BoundingBox, _columnBox.Max.Z + ErrorCTRL_BoundingBox);
                 Outline outline = new Outline(left, right);
                 BoundingBoxIntersectsFilter bbfilter = new BoundingBoxIntersectsFilter(outline);
-                _intersectedBeams = tempCollector.WherePasses(BeamFilter).WherePasses(bbfilter).ToElements();
+                tempCollector.WherePasses(BeamFilter).WherePasses(bbfilter);
+                foreach (FamilyInstance beam in tempCollector)
+                {
+                    if (beam.StructuralMaterialType == StructuralMaterialType.Concrete)
+                        _intersectedBeams.Add(beam);
+                    else
+                        _abandonWriter.WriteAbandonment(beam, AbandonmentTable.BeamNotConcrete);              
+                }
             }
             private static bool IsBeamCrossColumn(FamilyInstance beam, Direction dire)
             {
@@ -89,9 +97,9 @@ namespace P58_Loss.ElementProcess
             }
             private static Direction GetBeamDirection(FamilyInstance beam)
             {
-                if (System.Math.Abs(System.Math.Abs(beam.HandOrientation.X) - 1) < ErrorCTRL_BeamDirection)
+                if (ErrorCTRL_BeamDirection < System.Math.Abs(beam.HandOrientation.X))
                     return Direction.X;
-                else if (System.Math.Abs(System.Math.Abs(beam.HandOrientation.Y) - 1) < ErrorCTRL_BeamDirection)
+                else if (ErrorCTRL_BeamDirection < System.Math.Abs(beam.HandOrientation.Y))
                     return Direction.Y;
                 else return Direction.Undefined;
             }
@@ -228,11 +236,8 @@ namespace P58_Loss.ElementProcess
                         pgItem.direction = ((i <= 1) ? Direction.X : Direction.Y);
                         pgItem.PGName = "梁柱结点";
                         pgItem.PinYinSuffix = "LiangZhuJieDian";
-                        if (_addiInfo.prices[(byte)PGComponents.BeamColumnJoint] != 0.0)
-                        {
-                            pgItem.IfDefinePrice = true;
-                            pgItem.Price = _addiInfo.prices[(byte)PGComponents.BeamColumnJoint];
-                        }
+                        pgItem.IfDefinePrice = _addiInfo.requiredComp[(byte)PGComponents.BeamColumnJoint];
+                        pgItem.Price = _addiInfo.prices[(byte)PGComponents.BeamColumnJoint];
                         _PGItems.Add(pgItem);
                     }
                 }
@@ -253,8 +258,8 @@ namespace P58_Loss.ElementProcess
         }
 
         private static readonly double ErrorCTRL_IsCross = 2.0;
-        private static readonly double ErrorCTRL_BoundingBox = 0.1;
-        private static readonly double ErrorCTRL_BeamDirection = 1E-10;
+        private static readonly double ErrorCTRL_BoundingBox = 0.5;
+        private static readonly double ErrorCTRL_BeamDirection = System.Math.Cos(ConstSet.AngleTol);
 
         private static Document _doc;
         private static AdditionalInfo _addiInfo;
@@ -268,7 +273,12 @@ namespace P58_Loss.ElementProcess
         {
             FilteredElementCollector ColumnCollector = new FilteredElementCollector(_doc);
             ElementStructuralTypeFilter StruColumnFilter = new ElementStructuralTypeFilter(StructuralType.Column);
-            _StruColumns = new List<Element>(ColumnCollector.WherePasses(StruColumnFilter).ToElements());
+            _StruColumns = new List<Element>(50);
+            ColumnCollector.WherePasses(StruColumnFilter);
+            foreach (FamilyInstance column in ColumnCollector)
+            {
+                if(column.StructuralMaterialType == StructuralMaterialType.Concrete)    _StruColumns.Add(column);
+            }
         }
         private static void Process()
         {

@@ -9,6 +9,7 @@ namespace P58_Loss.GlobalLib
     public struct ConstSet
     {
         public static readonly double FeetToMeter = 0.3048;
+        public static readonly double AngleTol = 30.0 / 180.0 * Math.PI;
     }
 
     public class MyLevel
@@ -17,20 +18,19 @@ namespace P58_Loss.GlobalLib
         private static List<double> _elevations_adj = null;
         private static int _num;
         private static MyLevel _myLevel = null;
+        private static double _aveHeight;
+        private static readonly double ErrorCTRL_Offset = 0.2;
 
         private MyLevel(FilteredElementCollector levelColls)
         {
-            _num = 0;
             _elevations = new List<double>();
 
             foreach (Level level in levelColls)
             {
                 _elevations.Add(level.Elevation);
-                ++_num;
             }
-
+            _num = _elevations.Count;
             _elevations.Sort();
-
         }
         public static void SetMyLevel(FilteredElementCollector levelColls)
         {
@@ -40,36 +40,53 @@ namespace P58_Loss.GlobalLib
         {
             return _myLevel;
         }
-        public int GetFloor(out bool isFound, Level oriLevel, double offset = 0)  //Return the next larger item if not found.
-        {
+        public int GetFloor(out bool isFound, Level oriLevel, double offset = 0)
+        {                                                                         
+            return GetFloor(out isFound, oriLevel.Elevation, offset);
+        }
+        public int GetFloor(out bool isFound, double oriElevation, double offset = 0)   //Return the next larger item if not found.
+        {                                                                               //unsafe for walls, use GetWallHighFloor() instead
             int rank = 0;
-            double ela = oriLevel.Elevation + offset;
-            if(_elevations_adj != null)
-                rank = _elevations_adj.BinarySearch(ela);
-            else
-                rank = _elevations.BinarySearch(ela);
+            double ele = oriElevation + offset;
+            double actualOffset = 0.0;
+            isFound = false;
+            rank = _elevations_adj.BinarySearch(ele);   //Automatically throw an excepetion if _elevation_adj == null
             if (rank < 0)
             {
-                rank = ~rank;                   //C# ref: return the bitwise complement of the next larger item if not found
-                isFound = false;
+                rank = ~rank;                           //C# ref: return the bitwise complement of the next larger item if not found
+                if (rank != 0)
+                {
+                    actualOffset = ele - _elevations_adj[rank - 1];
+                    if (actualOffset < _aveHeight * ErrorCTRL_Offset)
+                    {
+                        --rank;
+                        isFound = true;
+                    }
+                    else if (_aveHeight - actualOffset < _aveHeight * ErrorCTRL_Offset && rank < _num) isFound = true;
+                }
+                else
+                {
+                    actualOffset = _elevations_adj[0] - ele;
+                    if (actualOffset < _aveHeight * ErrorCTRL_Offset) isFound = true;
+                }
             }
-            else
-            {
-                isFound = true;
-            }
+            else isFound = true;
+
             return rank;
         }
-        public double GetElavation(int floor)
+        public int GetWallTopFloor(out bool isFound, Level bottomLevel, double bottomOffset, double height)
         {
-            return (_elevations_adj != null? _elevations_adj.ElementAt(floor) : _elevations.ElementAt(floor));
+            double topElevation = bottomLevel.Elevation + bottomOffset + height;
+            return GetFloor(out isFound, topElevation);
         }
-        public static int GetLevelNum()         //Note: num_floor = num_level - 1
+        public double GetElevation(int floor)
         {
-            if (_myLevel != null) return _num;
-            else
-            {
-                throw (new Exception("Error in: P58_Loss.GlobalLib.MyLevel.GetLevelNum()\t\tMyLevel not yet instantiated"));
-            }
+            return _elevations_adj.ElementAt(floor);
+        }
+        public static int GetLevelNum()                 //Note: num_floor = num_level - 1
+        {
+            if (_myLevel == null) throw (new Exception("In ClassLib.MyLevel.GetLevelNum(): MyLevel has not yet initialized"));
+            return _num;
         }
         public static void WriteLevelsToInFile(ref string inFile)
         {
@@ -81,7 +98,7 @@ namespace P58_Loss.GlobalLib
         }
         public static void AdjustLevels(AdditionalInfo addiInfo)
         {
-            _elevations_adj = new List<double>(_elevations.Count);
+            _elevations_adj = new List<double>(_num);
             for (int i = 0; i < _num; ++i)
             {
                 if (addiInfo.unCheckedLevel[i] == 0)
@@ -90,6 +107,7 @@ namespace P58_Loss.GlobalLib
                 }            
             }
             _num = _elevations_adj.Count;
+            _aveHeight = (_elevations_adj[_num - 1] - _elevations_adj[0]) / (_num - 1);
         }
     }
 
@@ -253,12 +271,12 @@ namespace P58_Loss.GlobalLib
         }
         public void WriteAbandonment(Element ele, AbandonmentTable abonTable)
         {
-            _abandonment += ++_num + "\t" + ele.Category.Name.ToString() + "\t" + ele.Id.ToString() + "\t" 
+            _abandonment += ++_num + "\t" + ele.Name.ToString() + "\t" + ele.Id.ToString() + "\t" 
                 + ((int)abonTable).ToString().PadLeft(4,'0') + "\r\n";
         }
         public static void Output()
         {
-            _fileName += _addiInfo.rvtFileName + ".txt";
+            _fileName += "_" + _addiInfo.rvtFileName + ".txt";
             string head = _addiInfo.bldgName + "\t" + _addiInfo.bldgUse + "\t" + _addiInfo.builtYear + "\r\n";
             _abandonment = head + _abandonment;
             FileStream fs = new FileStream(_directory + _fileName, FileMode.Create);
@@ -316,6 +334,7 @@ namespace P58_Loss.GlobalLib
 
     public class AdditionalInfo
     {
+        private static int _num_comp = System.Enum.GetNames(typeof(PGComponents)).Length;
         public string outPath;
         public string rvtFileName;
         public string bldgName;
@@ -325,8 +344,8 @@ namespace P58_Loss.GlobalLib
         public MomentFrameType mfType;
         public SDC sdc;
         public int[] unCheckedLevel = new int[MyLevel.GetLevelNum()];
-        public bool[] requiredComp = new bool[10];
-        public double[] prices = new double[10];
+        public bool[] requiredComp = new bool[_num_comp];
+        public double[] prices = new double[_num_comp];
         public AdditionalInfo(char[] outFile)
         {
             /*
@@ -340,7 +359,7 @@ namespace P58_Loss.GlobalLib
                       MFtype: 0-SMF, 1-comfirmedMF, 2-IMF, 3-OMF, 4-uncomfirmedMF
                       SDC: 0-A, 1-B, 2-C, 3-D, 4-E, 5-F
             5th line: checked component(cc1) + '\t' + price1 + '\t' + cc2 + '\t' + price2 + '\t' + ...(num uncertain) + '\r\n'
-                      cc: 0-beam column joints, 1-shear wall
+                      cc: 0-beam column joints, 1-shear wall, 2-gyp walls, 3-curtain walls
                       price: 0.00 if default
              */
             int i = 3, hot = 3;

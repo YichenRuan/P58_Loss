@@ -15,7 +15,10 @@
     public enum PGComponents : byte
     {
         BeamColumnJoint = 0,
-        ShearWall
+        ShearWall,
+        GypWall,
+        CurtainWall,
+        Storefront
     }
 
     public enum Direction : byte
@@ -27,7 +30,8 @@
 
     public enum AbandonmentTable : int
     {
-        SkewBeam,                           //B1041
+        BeamNotConcrete,                    //B1041
+        SkewBeam,                           
         BeamFloorNotFound,
         TooManyBeamsAtOneJoint,
         ColumnTooShort,
@@ -40,7 +44,12 @@
         SlenderWallTooHigh,
         SlenderWallTooThick,
         SlenderWallTooLong,
-        WallTooShort
+        WallTooShort,
+        SkewWall,
+        WallBeyondRoof,
+        NonBearingWallNonGyp,               //C1011
+        WallBottomError,
+        WallPanelNotGlazed                  //B2022, B2023
     }
 
     public enum MomentFrameType : byte

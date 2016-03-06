@@ -68,6 +68,12 @@ BOOL CCompDlg::OnInitDialog()
 	p_Lcomp->SetItemText(0,1,L"¡∫÷˘Ω⁄µ„");
 	p_Lcomp->InsertItem(1,L" ");
 	p_Lcomp->SetItemText(1,1,L"ºÙ¡¶«Ω");
+	p_Lcomp->InsertItem(2,L" ");
+	p_Lcomp->SetItemText(2,1,L" Ø∏‡∞Â∏Ù«Ω");
+	p_Lcomp->InsertItem(3,L" ");
+	p_Lcomp->SetItemText(3,1,L"≤£¡ßƒª«Ω");
+	p_Lcomp->InsertItem(4,L" ");
+	p_Lcomp->SetItemText(4,1,L"µÍ√Ê");
 
 	for (int i=0;i<NUM_COMP;++i)
 	{

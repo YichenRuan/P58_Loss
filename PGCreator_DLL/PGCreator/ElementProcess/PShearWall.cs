@@ -27,20 +27,27 @@ namespace P58_Loss.ElementProcess
             private static double _length;
             private static Level _level_bottom, _level_top;
             private static double _offset_bottom, _offset_top;
+            private static double _noConsHeight;
             private static BoundingBoxXYZ _boundingBox;
             private static Wall _wall;
             private static Dictionary<string, int> _dictionary = new Dictionary<string, int>(37);       //Total num of FGs = 36
             private static double _areaBase = 0.0;
 
+            private static Direction GetWallDirection(Wall wall)
+            {
+                if (ErrorCTRL_WallDirection < System.Math.Abs(wall.Orientation.X)) return Direction.Y;
+                else if (ErrorCTRL_WallDirection < System.Math.Abs(wall.Orientation.Y)) return Direction.X;
+                else return Direction.Undefined;
+            }
             private static void GetBoundCond_and_Rein(int i)
             {
                 #region Boundary Condition
                 ElementName[] boundaryEle = { ElementName.Level, ElementName.Slab };         //[0] for left, [1] for right
 
                 XYZ bottom = new XYZ(_boundingBox.Min.X, _boundingBox.Min.Y,
-                    _myLevel.GetElavation(i - 1) + _height * ErrorCTRL_WallBoundingBox);
+                    _myLevel.GetElevation(i - 1) + _height * ErrorCTRL_WallBoundingBox);
                 XYZ top = new XYZ(_boundingBox.Max.X, _boundingBox.Max.Y,
-                    _myLevel.GetElavation(i) - _height * ErrorCTRL_WallBoundingBox);
+                    _myLevel.GetElevation(i) - _height * ErrorCTRL_WallBoundingBox);
                 Outline outline = new Outline(bottom, top);
                 BoundingBoxIntersectsFilter bbFilter = new BoundingBoxIntersectsFilter(outline);
                 FilteredElementCollector intersectedEle = new FilteredElementCollector(_doc);
@@ -60,9 +67,9 @@ namespace P58_Loss.ElementProcess
                         Wall wall = ele as Wall;
                         if (GetWallDirection(wall) == _direction) continue;
                         if (wall.StructuralUsage == StructuralWallUsage.NonBearing) continue;
-                        if (wall.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElavation(i - 1)
+                        if (wall.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
                                         < _height * ErrorCTRL_WallBoundaryEleHeight ||
-                                         _myLevel.GetElavation(i) - wall.get_BoundingBox(_doc.ActiveView).Min.Z
+                                         _myLevel.GetElevation(i) - wall.get_BoundingBox(_doc.ActiveView).Min.Z
                                         < _height * ErrorCTRL_WallBoundaryEleHeight) continue;
                         Curve wallCurve = ((LocationCurve)wall.Location).Curve;
                         switch (_direction)
@@ -103,9 +110,9 @@ namespace P58_Loss.ElementProcess
                     else if (ele.Category.Name.ToString() == "结构柱")
                     #region Column Intersecion
                     {
-                        if (ele.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElavation(i - 1)
+                        if (ele.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
                                         < _height * ErrorCTRL_WallBoundaryEleHeight ||
-                                        _myLevel.GetElavation(i) - ele.get_BoundingBox(_doc.ActiveView).Min.Z
+                                        _myLevel.GetElevation(i) - ele.get_BoundingBox(_doc.ActiveView).Min.Z
                                         < _height * ErrorCTRL_WallBoundaryEleHeight) continue;
                         XYZ columnOri = ((LocationPoint)ele.Location).Point;
                         switch (_direction)
@@ -273,7 +280,7 @@ namespace P58_Loss.ElementProcess
                     return true;
                 }
             }
-            public static void Recognization(Wall wall)
+            public static bool Recognization(Wall wall)
             {
                 _wall = wall;
                 _thickness = wall.Width;
@@ -284,32 +291,45 @@ namespace P58_Loss.ElementProcess
                     _doc.GetElement(wall.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE).AsElementId()) as Level;
                 _offset_bottom = wall.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
                 _offset_top = wall.get_Parameter(BuiltInParameter.WALL_TOP_OFFSET).AsDouble();
+                _noConsHeight = wall.get_Parameter(BuiltInParameter.WALL_USER_HEIGHT_PARAM).AsDouble();
 
                 _direction = GetWallDirection(wall);
+
+                if (_direction == Direction.Undefined)
+                {
+                    _abandonWriter.WriteAbandonment(wall, AbandonmentTable.SkewWall);
+                    return false;
+                }
 
                 bool isFound;
                 _floor_bottom =
                     _myLevel.GetFloor(out isFound, _level_bottom, _offset_bottom);
                 _floor_top =
-                    _myLevel.GetFloor(out isFound, _level_top, _offset_top);
+                    _myLevel.GetWallTopFloor(out isFound, _level_bottom, _offset_bottom, _noConsHeight);
                 if (!isFound) --_floor_top;
+                if (_floor_top == MyLevel.GetLevelNum())
+                {
+                    _abandonWriter.WriteAbandonment(_wall as Element, AbandonmentTable.WallBeyondRoof);
+                }
 
-                _boundingBox = wall.get_BoundingBox(_doc.ActiveView);
-            }
-            public static void UpdateToPGs()
-            {
                 if (_floor_top <= _floor_bottom)
                 {
                     _abandonWriter.WriteAbandonment(_wall as Element, AbandonmentTable.WallTooShort);
-                    return;
+                    return false;
                 }
+
+                _boundingBox = wall.get_BoundingBox(_doc.ActiveView);
+                return true;
+            }
+            public static void UpdateToPGs()
+            {
                 int i = _floor_bottom + 1;
                 int index;
                 while (i <= _floor_top)
                 {
                     string FGCode;
                     _floor_bottom = i - 1;
-                    _height = _myLevel.GetElavation(i) - _myLevel.GetElavation(i - 1);
+                    _height = _myLevel.GetElevation(i) - _myLevel.GetElevation(i - 1);
                     _area = _height * _length;
                     _aspectRatio = _length / _height;
                     GetBoundCond_and_Rein(i);
@@ -329,11 +349,8 @@ namespace P58_Loss.ElementProcess
                         pgItem.Code = FGCode;
                         pgItem.direction = _direction;
                         pgItem.Num[_floor_bottom] += _area / _areaBase;
-                        if (_addiInfo.prices[(byte)PGComponents.ShearWall] != 0.0)
-                        {
-                            pgItem.IfDefinePrice = true;
-                            pgItem.Price = _addiInfo.prices[(byte)PGComponents.ShearWall];
-                        }
+                        pgItem.IfDefinePrice = _addiInfo.requiredComp[(byte)PGComponents.ShearWall];
+                        pgItem.Price = _addiInfo.prices[(byte)PGComponents.ShearWall];
                         _PGItems.Add(pgItem);
                         _dictionary.Add(FGCode + _direction.ToString(), _PGItems.Count - 1);
                     }
@@ -354,7 +371,7 @@ namespace P58_Loss.ElementProcess
             DoubleCurtain
         }
 
-        private static readonly double ErrorCTRL_WallDirection = 0.05;
+        private static readonly double ErrorCTRL_WallDirection = System.Math.Cos(ConstSet.AngleTol);
         private static readonly double ErrorCTRL_WallBoundingBox = 0.1;
         private static readonly double ErrorCTRL_WallBoundaryEleHeight = 0.9;
         private static readonly double ErrorCTRL_WallIntersection = 1.0;
@@ -366,13 +383,7 @@ namespace P58_Loss.ElementProcess
         private static List<PGItem> _PGItems;
         private static List<Wall> _ShearWalls;
 
-        private static Direction GetWallDirection(Wall wall)
-        {
-            //assert: ABS(wall.orientation.#) <= 1
-            if (1.0 - System.Math.Abs(wall.Orientation.X) < ErrorCTRL_WallDirection) return Direction.Y;
-            else if (1.0 - System.Math.Abs(wall.Orientation.Y) < ErrorCTRL_WallDirection) return Direction.X;
-            else return Direction.Undefined;
-        }
+
         private static void ExtractObjects()
         {
             //All structural walls are considered as shear walls
@@ -393,7 +404,7 @@ namespace P58_Loss.ElementProcess
                 //Exclude shear walls whose structural material is NOT concrete (or undefined)
                 Element paraEle = _doc.GetElement
                     (wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
-                if (paraEle != null && paraEle.Name.ToString().ToLower().Contains("concrete"))
+                if (paraEle.Name.ToLower().Contains("concrete") || paraEle.Name.Contains("混凝土"))
                 {
                     _ShearWalls.Add(wall);
                 }
@@ -407,8 +418,8 @@ namespace P58_Loss.ElementProcess
         {
             foreach (Wall wall in _ShearWalls)
             {
-                ShearWallRecognizer.Recognization(wall);
-                ShearWallRecognizer.UpdateToPGs();
+                if (ShearWallRecognizer.Recognization(wall))
+                    ShearWallRecognizer.UpdateToPGs();
             }
         }
         public static List<PGItem> GetPG(Document doc, AdditionalInfo addiInfo)

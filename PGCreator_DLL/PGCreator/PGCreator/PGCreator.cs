@@ -87,7 +87,10 @@ namespace P58_Loss
                     PGWriter pgWriter = PGWriter.GetWriter();
 
                     if (addiInfo.requiredComp[(byte)PGComponents.BeamColumnJoint]) pgWriter.UpdatePGs(PBeamColumnJoints.GetPG(doc, addiInfo));
-                    if(addiInfo.requiredComp[(byte)PGComponents.ShearWall]) pgWriter.UpdatePGs(PShearWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.ShearWall]) pgWriter.UpdatePGs(PShearWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.GypWall]) pgWriter.UpdatePGs(PGypWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.CurtainWall]) pgWriter.UpdatePGs(PCurtainWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Storefront]) pgWriter.UpdatePGs(PStorefront.GetPG(doc, addiInfo));
                     normalExit = true;
                 }   
             }
