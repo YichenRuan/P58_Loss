@@ -10,6 +10,7 @@ namespace P58_Loss.GlobalLib
     {
         public static readonly double FeetToMeter = 0.3048;
         public static readonly double AngleTol = 30.0 / 180.0 * Math.PI;
+        public static readonly double InchToFeet = 1.0 / 12.0;
     }
 
     public class MyLevel

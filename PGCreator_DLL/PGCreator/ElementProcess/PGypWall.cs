@@ -34,6 +34,7 @@ namespace P58_Loss.ElementProcess
             public static bool Recognization(Wall wall)
             {
                 _wall = wall;
+
                 _length = wall.get_Parameter(BuiltInParameter.CURVE_ELEM_LENGTH).AsDouble();
                 _level_bottom =
                     _doc.GetElement(wall.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT).AsElementId()) as Level;
@@ -102,7 +103,6 @@ namespace P58_Loss.ElementProcess
         {
             List<ElementId> materials = null;
             Material material = null;
-            //bool ifFindGyp = false;
             FilteredElementCollector Walls = new FilteredElementCollector(_doc);
             ElementFilter WallFilter = new ElementCategoryFilter(BuiltInCategory.OST_Walls);
             ElementFilter NonStruWallFilter = new StructuralWallUsageFilter(StructuralWallUsage.NonBearing);
@@ -116,16 +116,9 @@ namespace P58_Loss.ElementProcess
                     if (material.Name.ToLower().Contains("gyp") || material.Name.ToLower().Contains("石膏"))
                     {
                         _GypWalls.Add(wall);
-                        //ifFindGyp = true;
                         break;
                     }
                 }
-                /*
-                if (!ifFindGyp)
-                {
-                    _abandonWriter.WriteAbandonment(wall, AbandonmentTable.NonBearingWallNonGyp);
-                }
-                 * */
             }
         }
         private static void Process()
@@ -150,8 +143,8 @@ namespace P58_Loss.ElementProcess
             _GypWalls = new List<Element>(10);
             _isSetPGItem = new bool[4];
 
-            bool IfDefinePrice = addiInfo.requiredComp[(byte)PGComponents.GypWall];
             double Price = addiInfo.prices[(byte)PGComponents.GypWall];
+            bool IfDefinePrice = Price == 0.0 ? false : true;
             string[] temp_code = { "C1011.001a", "C1011.001b" };
             Direction[] temp_dire = { Direction.X, Direction.Y };
             for (int i = 0; i < 2; ++i)

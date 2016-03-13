@@ -18,7 +18,10 @@
         ShearWall,
         GypWall,
         CurtainWall,
-        Storefront
+        Storefront,
+        Ceiling,
+        CeilingLighting,
+        MasonryWall
     }
 
     public enum Direction : byte
@@ -35,7 +38,7 @@
         BeamFloorNotFound,
         TooManyBeamsAtOneJoint,
         ColumnTooShort,
-        ShearWallNonConcrete,               //B1044
+        StruWallMaterialOOR,                //B1044
         RectangularWallTooThick,
         ThickWallHasSingleCurtain,
         ThinWallHasDoubleCurtain,
@@ -49,7 +52,9 @@
         WallBeyondRoof,
         NonBearingWallNonGyp,               //C1011
         WallBottomError,
-        WallPanelNotGlazed                  //B2022, B2023
+        CurtainWallPanelNotGlazed,          //B2022, B2023
+        CeilingLevelError,                  //C3032
+        MasonryWallThicknessOOR             //B1015
     }
 
     public enum MomentFrameType : byte

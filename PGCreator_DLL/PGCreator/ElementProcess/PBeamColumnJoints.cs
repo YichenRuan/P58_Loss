@@ -36,7 +36,7 @@ namespace P58_Loss.ElementProcess
                     _columnBox.Max.Y + ErrorCTRL_BoundingBox, _columnBox.Max.Z + ErrorCTRL_BoundingBox);
                 Outline outline = new Outline(left, right);
                 BoundingBoxIntersectsFilter bbfilter = new BoundingBoxIntersectsFilter(outline);
-                tempCollector.WherePasses(BeamFilter).WherePasses(bbfilter);
+                tempCollector.WherePasses(bbfilter).WherePasses(BeamFilter);
                 foreach (FamilyInstance beam in tempCollector)
                 {
                     if (beam.StructuralMaterialType == StructuralMaterialType.Concrete)
@@ -236,8 +236,9 @@ namespace P58_Loss.ElementProcess
                         pgItem.direction = ((i <= 1) ? Direction.X : Direction.Y);
                         pgItem.PGName = "梁柱结点";
                         pgItem.PinYinSuffix = "LiangZhuJieDian";
-                        pgItem.IfDefinePrice = _addiInfo.requiredComp[(byte)PGComponents.BeamColumnJoint];
                         pgItem.Price = _addiInfo.prices[(byte)PGComponents.BeamColumnJoint];
+                        if (pgItem.Price == 0.0) pgItem.IfDefinePrice = false;
+                        else pgItem.IfDefinePrice = true;
                         _PGItems.Add(pgItem);
                     }
                 }
@@ -273,12 +274,11 @@ namespace P58_Loss.ElementProcess
         {
             FilteredElementCollector ColumnCollector = new FilteredElementCollector(_doc);
             ElementStructuralTypeFilter StruColumnFilter = new ElementStructuralTypeFilter(StructuralType.Column);
-            _StruColumns = new List<Element>(50);
-            ColumnCollector.WherePasses(StruColumnFilter);
-            foreach (FamilyInstance column in ColumnCollector)
-            {
-                if(column.StructuralMaterialType == StructuralMaterialType.Concrete)    _StruColumns.Add(column);
-            }
+            IList<ElementFilter> StruMaterialFilterList = new List<ElementFilter>();
+            StruMaterialFilterList.Add(new StructuralMaterialTypeFilter(StructuralMaterialType.Concrete));
+            StruMaterialFilterList.Add(new StructuralMaterialTypeFilter(StructuralMaterialType.PrecastConcrete));
+            LogicalOrFilter StruMaterialFilter = new LogicalOrFilter(StruMaterialFilterList);
+            _StruColumns = ColumnCollector.WherePasses(StruColumnFilter).WherePasses(StruMaterialFilter).ToList();
         }
         private static void Process()
         {
@@ -295,6 +295,7 @@ namespace P58_Loss.ElementProcess
             _myLevel = MyLevel.GetMyLevel();
             _abandonWriter = AbandonmentWriter.GetWriter();
             _PGItems = new List<PGItem>(10);
+            List<Element> _StruColumns = new List<Element>(50);
             ExtractObjects();
             Process();
             return _PGItems;

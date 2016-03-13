@@ -182,12 +182,12 @@ namespace P58_Loss.ElementProcess
                     switch(_boundaryCondition)
                     {
                         case ShearWallBoundaryCondition.Rectangular:
-                            if (24 / 12 < _thickness)
+                            if (24.0 * ConstSet.InchToFeet < _thickness)
                             {
                                 _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.RectangularWallTooThick);
                                 return false;
                             }
-                            else if (16 / 12 < _thickness)
+                            else if (16.0 * ConstSet.InchToFeet < _thickness)
                             {
                                 if (_reinforcement == ShearWallReinforcement.SingleCurtain)
                                 {
@@ -196,7 +196,7 @@ namespace P58_Loss.ElementProcess
                                 }
                                 FGcode += "02";
                             }
-                            else if (8 / 12 < _thickness)
+                            else if (8.0 * ConstSet.InchToFeet < _thickness)
                             {
                                 if (_reinforcement == ShearWallReinforcement.SingleCurtain)
                                 {
@@ -216,23 +216,23 @@ namespace P58_Loss.ElementProcess
                             }
                             break;
                         case ShearWallBoundaryCondition.ReturnFlange:
-                            if (24 / 12 < _thickness)
+                            if (24.0 * ConstSet.InchToFeet < _thickness)
                             {
                                 _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.LowRiseWallTooThick);
                                 return false;
                             }
-                            else if (16 / 12 < _thickness) FGcode += "05";
-                            else if (8 / 12 < _thickness)  FGcode += "04";
+                            else if (16.0 * ConstSet.InchToFeet < _thickness) FGcode += "05";
+                            else if (8.0 * ConstSet.InchToFeet < _thickness) FGcode += "04";
                             else FGcode += "03";
                             break;
                         case ShearWallBoundaryCondition.Column:
-                            if (24 / 12 < _thickness)
+                            if (24.0 * ConstSet.InchToFeet < _thickness)
                             {
                                 _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.LowRiseWallTooThick);
                                 return false;
                             }
-                            else if (16 / 12 < _thickness) FGcode += "08";
-                            else if (8 / 12 < _thickness) FGcode += "07";
+                            else if (16.0 * ConstSet.InchToFeet < _thickness) FGcode += "08";
+                            else if (8.0 * ConstSet.InchToFeet < _thickness) FGcode += "07";
                             else FGcode += "06";
                             break;
                         default:
@@ -252,13 +252,13 @@ namespace P58_Loss.ElementProcess
                 }
                 else                                    //Slender Wall
                 {
-                    if (30 / 12 < _thickness)
+                    if (30.0 * ConstSet.InchToFeet < _thickness)
                     {
                         _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.SlenderWallTooThick);
                         return false;
                     }
-                    else if (18 / 12 < _thickness) FGcode += "11";
-                    else if (12 / 12 < _thickness) FGcode += "10";
+                    else if (18.0 * ConstSet.InchToFeet < _thickness) FGcode += "11";
+                    else if (12.0 * ConstSet.InchToFeet < _thickness) FGcode += "10";
                     else FGcode += "09";
 
                     if (12 < _height)
@@ -349,8 +349,9 @@ namespace P58_Loss.ElementProcess
                         pgItem.Code = FGCode;
                         pgItem.direction = _direction;
                         pgItem.Num[_floor_bottom] += _area / _areaBase;
-                        pgItem.IfDefinePrice = _addiInfo.requiredComp[(byte)PGComponents.ShearWall];
                         pgItem.Price = _addiInfo.prices[(byte)PGComponents.ShearWall];
+                        if (pgItem.Price == 0.0) pgItem.IfDefinePrice = false;
+                        else pgItem.IfDefinePrice = true;
                         _PGItems.Add(pgItem);
                         _dictionary.Add(FGCode + _direction.ToString(), _PGItems.Count - 1);
                     }
@@ -389,28 +390,25 @@ namespace P58_Loss.ElementProcess
             //All structural walls are considered as shear walls
             FilteredElementCollector ShearWallCollector = new FilteredElementCollector(_doc);
             ElementFilter WallFilter = new ElementCategoryFilter(BuiltInCategory.OST_Walls);
-            StructuralWallUsageFilter BearingWallFilter = new StructuralWallUsageFilter(StructuralWallUsage.Bearing);
-            StructuralWallUsageFilter ShearWallFilter = new StructuralWallUsageFilter(StructuralWallUsage.Shear);
-            StructuralWallUsageFilter CombinedWallFilter = new StructuralWallUsageFilter(StructuralWallUsage.Combined);
             IList<ElementFilter> StruWallFilterList = new List<ElementFilter>();
-            StruWallFilterList.Add(BearingWallFilter);
-            StruWallFilterList.Add(ShearWallFilter);
-            StruWallFilterList.Add(CombinedWallFilter);
-            LogicalOrFilter logicOrFilter = new LogicalOrFilter(StruWallFilterList);
-            ShearWallCollector.WherePasses(WallFilter).WherePasses(logicOrFilter);
+            StruWallFilterList.Add(new StructuralWallUsageFilter(StructuralWallUsage.Bearing));
+            StruWallFilterList.Add(new StructuralWallUsageFilter(StructuralWallUsage.Shear));
+            StruWallFilterList.Add(new StructuralWallUsageFilter(StructuralWallUsage.Combined));
+            LogicalOrFilter StruWallFilter = new LogicalOrFilter(StruWallFilterList);
+            ShearWallCollector.WherePasses(WallFilter).WherePasses(StruWallFilter);
 
             foreach (Wall wall in ShearWallCollector)
             {
                 //Exclude shear walls whose structural material is NOT concrete (or undefined)
-                Element paraEle = _doc.GetElement
-                    (wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
-                if (paraEle.Name.ToLower().Contains("concrete") || paraEle.Name.Contains("混凝土"))
+                Material material = _doc.GetElement
+                    (wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as Material;
+                if (material.MaterialCategory == "Concrete" || material.MaterialCategory == "混凝土")
                 {
                     _ShearWalls.Add(wall);
                 }
-                else
+                else if (material.MaterialCategory != "Masonry" && material.MaterialCategory != "砌体")
                 {
-                    _abandonWriter.WriteAbandonment(wall, AbandonmentTable.ShearWallNonConcrete);
+                    _abandonWriter.WriteAbandonment(wall, AbandonmentTable.StruWallMaterialOOR);
                 }
             }
         }

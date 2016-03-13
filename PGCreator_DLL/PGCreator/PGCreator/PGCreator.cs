@@ -86,12 +86,16 @@ namespace P58_Loss
                     AbandonmentWriter.SetWriter(addiInfo);
                     PGWriter pgWriter = PGWriter.GetWriter();
 
-                    if (addiInfo.requiredComp[(byte)PGComponents.BeamColumnJoint]) pgWriter.UpdatePGs(PBeamColumnJoints.GetPG(doc, addiInfo));
-                    if (addiInfo.requiredComp[(byte)PGComponents.ShearWall]) pgWriter.UpdatePGs(PShearWall.GetPG(doc, addiInfo));
-                    if (addiInfo.requiredComp[(byte)PGComponents.GypWall]) pgWriter.UpdatePGs(PGypWall.GetPG(doc, addiInfo));
-                    if (addiInfo.requiredComp[(byte)PGComponents.CurtainWall]) pgWriter.UpdatePGs(PCurtainWall.GetPG(doc, addiInfo));
-                    if (addiInfo.requiredComp[(byte)PGComponents.Storefront]) pgWriter.UpdatePGs(PStorefront.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.BeamColumnJoint])  pgWriter.UpdatePGs(PBeamColumnJoints.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.ShearWall])        pgWriter.UpdatePGs(PShearWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.GypWall])          pgWriter.UpdatePGs(PGypWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.CurtainWall])      pgWriter.UpdatePGs(PCurtainWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Storefront])       pgWriter.UpdatePGs(PStorefront.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Ceiling]
+                     || addiInfo.requiredComp[(byte)PGComponents.CeilingLighting])  pgWriter.UpdatePGs(PCeiling.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.MasonryWall])      pgWriter.UpdatePGs(PMasonryWall.GetPG(doc, addiInfo));
                     normalExit = true;
+
                 }   
             }
             catch (Exception e)

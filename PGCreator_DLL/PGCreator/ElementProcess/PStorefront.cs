@@ -38,24 +38,34 @@ namespace P58_Loss.ElementProcess
                 PanelType panelType = _doc.GetElement(panelId) as PanelType;
                 if (panelType != null)
                 {
-                    if (panelType.Name != "Glazed" && panelType.Name != "玻璃")
+                    Material panelMaterial =
+                        _doc.GetElement(panelType.get_Parameter(BuiltInParameter.MATERIAL_ID_PARAM).AsElementId()) as Material;
+                    if (panelMaterial.MaterialCategory != "Glass" && panelMaterial.MaterialCategory != "玻璃")
                     {
-                        _abandonWriter.WriteAbandonment(wall, AbandonmentTable.WallPanelNotGlazed);
                         return false;
                     }
                 }
                 else
                 {
                     ICollection<ElementId> panelIds = _wall.CurtainGrid.GetPanelIds();
-                    Panel panel = null;
-                    foreach (ElementId eleId in panelIds)
+                    Panel panel = _doc.GetElement(panelIds.First()) as Panel;
+                    if (panel == null) return false;
+                    ICollection<ElementId> panelMaterialIds = panel.GetMaterialIds(false);
+                    Material panelMaterial = null;
+                    bool isContainGlass = false;
+                    foreach (ElementId materialId in panelMaterialIds)
                     {
-                        panel = _doc.GetElement(eleId) as Panel;
-                        if (panel.Name != "Glazed" && panel.Name != "玻璃")
+                        panelMaterial = _doc.GetElement(materialId) as Material;
+
+                        if (panelMaterial.MaterialCategory == "Glass" || panelMaterial.MaterialCategory == "玻璃")
                         {
-                            _abandonWriter.WriteAbandonment(wall, AbandonmentTable.WallPanelNotGlazed);
-                            return false;
+                            isContainGlass = true;
+                            break;
                         }
+                    }
+                    if (!isContainGlass)
+                    {
+                        return false;
                     }
                 }
 
@@ -154,8 +164,8 @@ namespace P58_Loss.ElementProcess
             _Storefronts = new List<Wall>(10);
             _isSetPGItem = new bool[4];
 
-            bool IfDefinePrice = addiInfo.requiredComp[(byte)PGComponents.Storefront];
             double Price = addiInfo.prices[(byte)PGComponents.Storefront];
+            bool IfDefinePrice = Price == 0.0 ? false : true;
             string[] temp_code = { "B2023.001", "B2023.002" };
             Direction[] temp_dire = { Direction.X, Direction.Y };
             for (int i = 0; i < 2; ++i)

@@ -50,8 +50,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PBeamColumnJoints.cs" />
+    <Compile Include="PCeiling.cs" />
     <Compile Include="PCurtainWall.cs" />
     <Compile Include="PGypWall.cs" />
+    <Compile Include="PMasonryWall.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PShearWall.cs" />
     <Compile Include="PStorefront.cs" />

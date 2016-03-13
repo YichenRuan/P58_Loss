@@ -36,27 +36,36 @@ namespace P58_Loss.ElementProcess
 
                 ElementId panelId = wall.WallType.get_Parameter(BuiltInParameter.AUTO_PANEL_WALL).AsElementId();
                 PanelType panelType = _doc.GetElement(panelId) as PanelType;
-                if (panelType != null)
+                if (panelType != null)                                                          //as a panel system
                 {
-                    if (panelType.Name != "Glazed" && panelType.Name != "玻璃")
+                    Material panelMaterial = 
+                        _doc.GetElement(panelType.get_Parameter(BuiltInParameter.MATERIAL_ID_PARAM).AsElementId()) as Material;
+                    if (panelMaterial.MaterialCategory != "Glass" && panelMaterial.MaterialCategory != "玻璃")
                     {
-                        _abandonWriter.WriteAbandonment(wall, AbandonmentTable.WallPanelNotGlazed);
                         return false;
                     }
                 }
-                else
+                else                                                                            //panels built individually
                 {
                     ICollection<ElementId> panelIds = _wall.CurtainGrid.GetPanelIds();
-                    Panel panel = null;
-                    foreach (ElementId eleId in panelIds)
+                    Panel panel = _doc.GetElement(panelIds.First()) as Panel;
+                    if (panel == null) return false;
+                    ICollection<ElementId> panelMaterialIds = panel.GetMaterialIds(false);
+                    Material panelMaterial = null;
+                    bool isContainGlass = false;
+                    foreach (ElementId materialId in panelMaterialIds)
                     {
-                        panel = _doc.GetElement(eleId) as Panel;
+                        panelMaterial = _doc.GetElement(materialId) as Material;
 
-                        if (panel.Name != "Glazed" && panel.Name != "玻璃")
+                        if (panelMaterial.MaterialCategory == "Glass" || panelMaterial.MaterialCategory == "玻璃")
                         {
-                            _abandonWriter.WriteAbandonment(wall, AbandonmentTable.WallPanelNotGlazed);
-                            return false;
+                            isContainGlass = true;
+                            break;
                         }
+                    }
+                    if (!isContainGlass)
+                    {
+                        return false;
                     }
                 }
 
@@ -141,8 +150,8 @@ namespace P58_Loss.ElementProcess
             Walls.WherePasses(WallFilter).WherePasses(NonStruWallFilter);
             foreach (Wall wall in Walls)
             {
-                if (wall.Name.Contains("Exterior Glazing") || wall.Name.Contains("Curtain")
-                 || wall.Name.Contains("外部玻璃") || wall.Name.Contains("幕墙")) _CurtainWalls.Add(wall);
+                if (wall.WallType.Kind == WallKind.Curtain)
+                _CurtainWalls.Add(wall);
             }    
         }
 
@@ -156,8 +165,8 @@ namespace P58_Loss.ElementProcess
             _CurtainWalls = new List<Wall>(10);
             _isSetPGItem = new bool[4];
 
-            bool IfDefinePrice = addiInfo.requiredComp[(byte)PGComponents.CurtainWall];
             double Price = addiInfo.prices[(byte)PGComponents.CurtainWall];
+            bool IfDefinePrice = Price == 0.0 ? false : true;
             string[] temp_code = { "B2022.001", "B2022.002" };
             Direction[] temp_dire = { Direction.X, Direction.Y };
             for (int i = 0; i < 2; ++i)

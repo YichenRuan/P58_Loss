@@ -74,6 +74,12 @@ BOOL CCompDlg::OnInitDialog()
 	p_Lcomp->SetItemText(3,1,L"²£Á§Ä»Ç½");
 	p_Lcomp->InsertItem(4,L" ");
 	p_Lcomp->SetItemText(4,1,L"µêÃæ");
+	p_Lcomp->InsertItem(5,L" ");
+	p_Lcomp->SetItemText(5,1,L"Ìì»¨°å");
+	p_Lcomp->InsertItem(6,L" ");
+	p_Lcomp->SetItemText(6,1,L"µõ¶¥µÆ");
+	p_Lcomp->InsertItem(7,L" ");
+	p_Lcomp->SetItemText(7,1,L"ÆöÌåÇ½");
 
 	for (int i=0;i<NUM_COMP;++i)
 	{

@@ -1,12 +1,15 @@
 #pragma once
 //#include "MyListCtrl.h"
-#define NUM_COMP 5
+#define NUM_COMP 8
 /*
 	0: 梁柱节点
 	1: 剪力墙
 	2: 石膏板隔墙
 	3: 玻璃幕墙
 	4: 店面
+	5: 天花板
+	6: 吊顶灯
+	7: 砌体墙
 */
 
 // CCompDlg 对话框
