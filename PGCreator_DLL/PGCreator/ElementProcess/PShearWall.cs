@@ -40,8 +40,9 @@ namespace P58_Loss.ElementProcess
                 else return Direction.Undefined;
             }
             private static void GetBoundCond_and_Rein(int i)
-            {
+            {    
                 #region Boundary Condition
+                //Note: only structural walls/columns are considered as boundary elements
                 ElementName[] boundaryEle = { ElementName.Level, ElementName.Slab };         //[0] for left, [1] for right
 
                 XYZ bottom = new XYZ(_boundingBox.Min.X, _boundingBox.Min.Y,
@@ -50,18 +51,14 @@ namespace P58_Loss.ElementProcess
                     _myLevel.GetElevation(i) - _height * ErrorCTRL_WallBoundingBox);
                 Outline outline = new Outline(bottom, top);
                 BoundingBoxIntersectsFilter bbFilter = new BoundingBoxIntersectsFilter(outline);
-                FilteredElementCollector intersectedEle = new FilteredElementCollector(_doc);
+                FilteredElementCollector intersectedWalls = new FilteredElementCollector(_doc);
+                FilteredElementCollector intersectedColumns = new FilteredElementCollector(_doc);
                 List<ElementFilter> listFilter = new List<ElementFilter>();
-                listFilter.Add(new ElementCategoryFilter(BuiltInCategory.OST_Walls));
-                listFilter.Add(new ElementCategoryFilter(BuiltInCategory.OST_StructuralColumns));
-                LogicalOrFilter orFilter = new LogicalOrFilter(listFilter);
-                intersectedEle.WherePasses(bbFilter).WherePasses(orFilter);
+                intersectedWalls.WherePasses(bbFilter).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_Walls));
+                intersectedColumns.WherePasses(bbFilter).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_StructuralColumns));
 
-
-                foreach (Element ele in intersectedEle)
-                {
-                    //Note: only structural walls/columns are considered as boundary elements
-                    if (ele.Category.Name == "墙")
+                foreach (Element ele in intersectedWalls)
+                {        
                     #region Wall Intersection
                     {
                         Wall wall = ele as Wall;
@@ -107,7 +104,10 @@ namespace P58_Loss.ElementProcess
                         }
                     }
                     #endregion
-                    else if (ele.Category.Name.ToString() == "结构柱")
+                }
+
+                foreach (Element ele in intersectedColumns)
+                {
                     #region Column Intersecion
                     {
                         if (ele.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
@@ -402,11 +402,11 @@ namespace P58_Loss.ElementProcess
                 //Exclude shear walls whose structural material is NOT concrete (or undefined)
                 Material material = _doc.GetElement
                     (wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as Material;
-                if (material.MaterialCategory == "Concrete" || material.MaterialCategory == "混凝土")
+                if (material.MaterialCategory == _addiInfo.materialTypes[(byte)PGMaterialType.Concrete] )
                 {
                     _ShearWalls.Add(wall);
                 }
-                else if (material.MaterialCategory != "Masonry" && material.MaterialCategory != "砌体")
+                else if (material.MaterialCategory != _addiInfo.materialTypes[(byte)PGMaterialType.Masonry] )
                 {
                     _abandonWriter.WriteAbandonment(wall, AbandonmentTable.StruWallMaterialOOR);
                 }

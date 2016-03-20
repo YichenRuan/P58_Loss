@@ -1,14 +1,15 @@
 
 // PGCreatorDlg.h : 头文件
 //
-
 #pragma once
 #include "afxcmn.h"
 #include "InfoDlg.h"
 #include "LevelDlg.h"
 #include "DefaultDlg.h"
 #include "CompDlg.h"
+#include "MateDlg.h"
 
+#define MAX_SETTING_LENGTH 600
 
 // CPGCreatorDlg 对话框
 class CPGCreatorDlg : public CDialogEx
@@ -38,15 +39,18 @@ public:
 	CLevelDlg m_levelDlg;
 	CDefaultDlg m_defaultDlg;
 	CCompDlg m_compDlg;
+	CMateDlg m_mateDlg;
 	
 	CTabCtrl m_tab;
 
 	CBrush  m_brush;
 	char inFileName[30];
 	char outFileName[30];
+	char settingFileName[30];
 	char inFile[500];
 	char inPath[MAX_PATH];
 	char outPath[MAX_PATH];
+	char settingPath[MAX_PATH];
 
 	afx_msg void OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
@@ -56,4 +60,10 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	//char* GetProgramDir();
 	afx_msg void OnBnClickedCancel();
+	void static TcharToChar (const TCHAR * tchar, char * _char);
+	void static CharToTchar (const char * _char, TCHAR * tchar);
+	void static GetSetting(char* setting); 
+	static char settingDoc[MAX_SETTING_LENGTH];
+	static bool isSettingChanged;
+	static CString GiveSettingCopy();
 };

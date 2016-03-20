@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "PGCreator.h"
+#include "PGCreatorDlg.h"
 #include "InfoDlg.h"
 #include "afxdialogex.h"
 #include <queue>
@@ -45,14 +46,6 @@ END_MESSAGE_MAP()
 
 // CInfoDlg 消息处理程序
 
-void CInfoDlg::CharToTchar (const char * _char, TCHAR * tchar)  
-{  
-	int iLength ;  
-
-	iLength = MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, NULL, 0) ;  
-	MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, tchar, iLength) ;  
-} 
-
 BOOL CInfoDlg::OnInitDialog()
 {
 	SetDlgItemTextW(IDC_EDIT_PATH,filePath);
@@ -91,8 +84,8 @@ void CInfoDlg::InFileInterpret(char* inFile,std::queue<int> &infoQueue)
 	int i=2;
 	strcpy_s(_rvtFileName,inFile + infoQueue.front());	infoQueue.pop();
 	strcpy_s(_bldgName,inFile + infoQueue.front());	infoQueue.pop();
-	CharToTchar(_rvtFileName,rvtFileName);
-	CharToTchar(_bldgName,bldgName);
+	CPGCreatorDlg::CharToTchar(_rvtFileName,rvtFileName);
+	CPGCreatorDlg::CharToTchar(_bldgName,bldgName);
 	SetDlgItemTextW(IDC_EDIT_FILE,rvtFileName);
 	SetDlgItemTextW(IDC_EDIT_BLDG,bldgName);
 	CEdit* p_Efile = (CEdit*)GetDlgItem(IDC_EDIT_FILE);
@@ -153,15 +146,15 @@ void CInfoDlg::OutputInfo(FILE* fp)
 	char _struUse[MAX_INFO_LENGTH];
 	char _year[MAX_INFO_LENGTH];
 	GetDlgItem(IDC_EDIT_FILE)->GetWindowTextW(temp);
-	TcharToChar(temp,_rvtFileName);
+	CPGCreatorDlg::TcharToChar(temp,_rvtFileName);
 	GetDlgItem(IDC_EDIT_BLDG)->GetWindowTextW(temp);
-	TcharToChar(temp,_bldgName);
+	CPGCreatorDlg::TcharToChar(temp,_bldgName);
 	GetDlgItem(IDC_EDIT_BLDGUSE)->GetWindowTextW(temp);
-	TcharToChar(temp,_bldgUse);
+	CPGCreatorDlg::TcharToChar(temp,_bldgUse);
 	GetDlgItem(IDC_EDIT_STRU)->GetWindowTextW(temp);
-	TcharToChar(temp,_struUse);
+	CPGCreatorDlg::TcharToChar(temp,_struUse);
 	GetDlgItem(IDC_EDIT_YEAR)->GetWindowTextW(temp);
-	TcharToChar(temp,_year);
+	CPGCreatorDlg::TcharToChar(temp,_year);
 	fprintf_s(fp,"%s\t",_rvtFileName);
 	fprintf_s(fp,"%s\t",_bldgName);
 	fprintf_s(fp,"%s\t",_bldgUse);
@@ -169,17 +162,11 @@ void CInfoDlg::OutputInfo(FILE* fp)
 	fprintf_s(fp,"%s\t\n",_year);
 }
 
-void CInfoDlg::TcharToChar (const TCHAR * tchar, char * _char)  
-{  
-	int iLength ;    
-	iLength = WideCharToMultiByte(CP_ACP, 0, tchar, -1, NULL, 0, NULL, NULL);    
-	WideCharToMultiByte(CP_ACP, 0, tchar, -1, _char, iLength, NULL, NULL);   
-}  
 
 char* CInfoDlg::GetFilePath()
 {
 	char* temp_path = new char[MAX_PATH];
-	TcharToChar(filePath,temp_path);
+	CPGCreatorDlg::TcharToChar(filePath,temp_path);
 	return temp_path;
 }
 

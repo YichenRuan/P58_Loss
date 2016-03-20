@@ -30,6 +30,7 @@ void CDefaultDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CDefaultDlg, CDialog)
+	ON_BN_CLICKED(IDC_BUTTON_NOTEPAD, &CDefaultDlg::OnClickedButtonNotepad)
 END_MESSAGE_MAP()
 
 
@@ -60,4 +61,10 @@ void CDefaultDlg::OutputInfo(FILE* fp)
 	int sdc = GetCheckedRadioButton( IDC_RADIO_SDCA, IDC_RADIO_SDCF ) - IDC_RADIO_SDCA;
 	fprintf_s(fp,"%d\t%d\t\n",mf,sdc);
 
+}
+
+void CDefaultDlg::OnClickedButtonNotepad()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_notepadDlg.DoModal();
 }

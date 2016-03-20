@@ -21,7 +21,31 @@
         Storefront,
         Ceiling,
         CeilingLighting,
-        MasonryWall
+        MasonryWall,
+        WallFinish
+    }
+
+    public enum PGMaterialType : byte
+    {
+        Concrete,
+        Metal,
+        Masonry,
+        Wood,
+        Glass,
+        Gypsum,
+        WallPaper,
+        Ceramic,
+        Marble
+    }
+
+    public enum DefaultSet : byte
+    {
+        ShearWall_BoundaryCondition,
+        ShearWall_Curtain,
+        GypWall_Stud,
+        GypWall_BoundaryCondition,
+        Ceiling_Ip,
+        Lighting_Support
     }
 
     public enum Direction : byte
@@ -54,7 +78,8 @@
         WallBottomError,
         CurtainWallPanelNotGlazed,          //B2022, B2023
         CeilingLevelError,                  //C3032
-        MasonryWallThicknessOOR             //B1015
+        MasonryWallThicknessOOR,            //B1015
+        TooManyFinishes
     }
 
     public enum MomentFrameType : byte

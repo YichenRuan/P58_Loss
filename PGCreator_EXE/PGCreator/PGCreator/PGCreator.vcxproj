@@ -105,6 +105,8 @@
     <ClInclude Include="DefaultDlg.h" />
     <ClInclude Include="InfoDlg.h" />
     <ClInclude Include="LevelDlg.h" />
+    <ClInclude Include="MateDlg.h" />
+    <ClInclude Include="NotepadDlg.h" />
     <ClInclude Include="PGCreator.h" />
     <ClInclude Include="PGCreatorDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -116,6 +118,8 @@
     <ClCompile Include="DefaultDlg.cpp" />
     <ClCompile Include="InfoDlg.cpp" />
     <ClCompile Include="LevelDlg.cpp" />
+    <ClCompile Include="MateDlg.cpp" />
+    <ClCompile Include="NotepadDlg.cpp" />
     <ClCompile Include="PGCreator.cpp" />
     <ClCompile Include="PGCreatorDlg.cpp" />
     <ClCompile Include="stdafx.cpp">

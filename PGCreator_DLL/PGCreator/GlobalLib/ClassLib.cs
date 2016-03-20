@@ -13,6 +13,11 @@ namespace P58_Loss.GlobalLib
         public static readonly double InchToFeet = 1.0 / 12.0;
     }
 
+    public class PGPath
+    {
+        public static readonly string exeDirection = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "PGCreator\\";
+    }
+
     public class MyLevel
     {
         private static List<double> _elevations;
@@ -336,6 +341,8 @@ namespace P58_Loss.GlobalLib
     public class AdditionalInfo
     {
         private static int _num_comp = System.Enum.GetNames(typeof(PGComponents)).Length;
+        private static int _num_material = System.Enum.GetNames(typeof(PGMaterialType)).Length;
+        private static int _num_setting = System.Enum.GetNames(typeof(DefaultSet)).Length;
         public string outPath;
         public string rvtFileName;
         public string bldgName;
@@ -347,9 +354,13 @@ namespace P58_Loss.GlobalLib
         public int[] unCheckedLevel = new int[MyLevel.GetLevelNum()];
         public bool[] requiredComp = new bool[_num_comp];
         public double[] prices = new double[_num_comp];
-        public AdditionalInfo(char[] outFile)
+        public string[] materialTypes = new string[_num_material];
+        public List<int> defaultSet = null;
+        public AdditionalInfo(char[] outFile, char[] settingFile)
         {
-            /*
+            #region .OUT
+            {
+                /*
             outFile format:
             0th line: 0 + '\r\n'
             1st line: output path + '\r\n'
@@ -362,119 +373,168 @@ namespace P58_Loss.GlobalLib
             5th line: checked component(cc1) + '\t' + price1 + '\t' + cc2 + '\t' + price2 + '\t' + ...(num uncertain) + '\r\n'
                       cc: 0-beam column joints, 1-shear wall, 2-gyp walls, 3-curtain walls
                       price: 0.00 if default
+            6th line: material type name(mtn1) + '\t' + mtn2 + '\t' + ... + '\r\n'
+                      check EnumLib.PGMaterialType for names and sequence
              */
-            int i = 3, hot = 3;
-            string temp = null;
-            int tempIndex = 0;
-            //1: output path
-            while (outFile[i] != '\r') ++i;
-            outPath = new string(outFile, hot, i - hot);
-            hot = i += 2;
-            //2: basic info
-            while (outFile[i] != '\t') ++i;
-            rvtFileName = new string(outFile, hot, i - hot);
-            hot = ++i;
-            while (outFile[i] != '\t') ++i;
-            bldgName = new string(outFile, hot, i - hot);
-            hot = ++i;
-            while (outFile[i] != '\t') ++i;
-            bldgUse = new string(outFile, hot, i - hot);
-            hot = ++i;
-            while (outFile[i] != '\t') ++i;
-            struType = new string(outFile, hot, i - hot);
-            hot = ++i;
-            while (outFile[i] != '\t') ++i;
-            builtYear = new string(outFile, hot, i - hot);
-            hot = i += 3;
-            //3: levels
-            if (outFile[i] == '\r')
-            {
+                int i = 3, hot = 3;
+                string temp = null;
+                int tempIndex = 0;
+                //1: output path
+                while (outFile[i] != '\r') ++i;
+                outPath = new string(outFile, hot, i - hot);
                 hot = i += 2;
-            }
-            else
-            {
+                //2: basic info
+                while (outFile[i] != '\t') ++i;
+                rvtFileName = new string(outFile, hot, i - hot);
+                hot = ++i;
+                while (outFile[i] != '\t') ++i;
+                bldgName = new string(outFile, hot, i - hot);
+                hot = ++i;
+                while (outFile[i] != '\t') ++i;
+                bldgUse = new string(outFile, hot, i - hot);
+                hot = ++i;
+                while (outFile[i] != '\t') ++i;
+                struType = new string(outFile, hot, i - hot);
+                hot = ++i;
+                while (outFile[i] != '\t') ++i;
+                builtYear = new string(outFile, hot, i - hot);
+                hot = i += 3;
+                //3: levels
+                if (outFile[i] == '\r')
+                {
+                    hot = i += 2;
+                }
+                else
+                {
+                    while (outFile[i] != '\r')
+                    {
+                        ++i;
+                        if (outFile[i] == '\t')
+                        {
+                            temp = new string(outFile, hot, i - hot);
+                            unCheckedLevel[(int.Parse(temp))] = 1;
+                            hot = ++i;
+                        }
+                    }
+                    hot = i += 2;
+                }
+                //4: structural info
+                //MFType
+                switch (outFile[i])
+                {
+                    case '0':
+                        mfType = MomentFrameType.SMF;
+                        break;
+                    case '1':
+                        mfType = MomentFrameType.confirmedMF;
+                        break;
+                    case '2':
+                        mfType = MomentFrameType.IMF;
+                        break;
+                    case '3':
+                        mfType = MomentFrameType.OMF;
+                        break;
+                    case '4':
+                        mfType = MomentFrameType.unconfirmedMF;
+                        break;
+                    default:
+                        ErrorWriter.GetWriter().WriteError("ClassLib.AdditionalInfo: MFType not found.");
+                        break;
+                }
+                //SDC
+                i += 2;
+                switch (outFile[i])
+                {
+                    case '0':
+                        sdc = SDC.A;
+                        break;
+                    case '1':
+                        sdc = SDC.B;
+                        break;
+                    case '2':
+                        sdc = SDC.C;
+                        break;
+                    case '3':
+                        sdc = SDC.D;
+                        break;
+                    case '4':
+                        sdc = SDC.E;
+                        break;
+                    case '5':
+                        sdc = SDC.F;
+                        break;
+                    default:
+                        ErrorWriter.GetWriter().WriteError("ClassLib.AdditionalInfo: SDC not found.");
+                        break;
+                }
+                //add here
+                hot = i += 4;
+                //5: component
+                if (outFile[i] != '\r')
+                {
+                    while (outFile[i] != '\r')
+                    {
+                        ++i;
+                        if (outFile[i] == '\t')
+                        {
+                            temp = new string(outFile, hot, i - hot);
+                            tempIndex = int.Parse(temp);
+                            requiredComp[tempIndex] = true;
+                            hot = ++i;
+                            while (outFile[i] != '\t') ++i;
+                            temp = new string(outFile, hot, i - hot);
+                            prices[tempIndex] = double.Parse(temp);
+                            hot = ++i;
+                        }
+                    }
+                }
+                //6: material type
+                hot = i += 2;
+                int count_material = 0;
                 while (outFile[i] != '\r')
                 {
                     ++i;
                     if (outFile[i] == '\t')
                     {
-                        temp = new string(outFile, hot, i - hot);
-                        unCheckedLevel[(int.Parse(temp))] = 1;
+                        materialTypes[count_material++] = new string(outFile, hot, i - hot);
                         hot = ++i;
                     }
                 }
-                hot = i += 2;
-            }
-            //4: structural info
-                //MFType
-            switch (outFile[i])
+            }    
+            #endregion
+            #region .SET
             {
-                case '0':
-                    mfType = MomentFrameType.SMF;
-                    break;
-                case '1':
-                    mfType = MomentFrameType.confirmedMF;
-                    break;
-                case '2':
-                    mfType = MomentFrameType.IMF;
-                    break;
-                case '3':
-                    mfType = MomentFrameType.OMF;
-                    break;
-                case '4':
-                    mfType = MomentFrameType.unconfirmedMF;
-                    break;
-                default:
-                    ErrorWriter.GetWriter().WriteError("ClassLib.AdditionalInfo: MFType not found.");
-                    break;
-            }
-                //SDC
-            i += 2;
-            switch (outFile[i])
-            {
-                case '0':
-                    sdc = SDC.A;
-                    break;
-                case '1':
-                    sdc = SDC.B;
-                    break;
-                case '2':
-                    sdc = SDC.C;
-                    break;
-                case '3':
-                    sdc = SDC.D;
-                    break;
-                case '4':
-                    sdc = SDC.E;
-                    break;
-                case '5':
-                    sdc = SDC.F;
-                    break;
-                default:
-                    ErrorWriter.GetWriter().WriteError("ClassLib.AdditionalInfo: SDC not found.");
-                    break;
-            }
-                //add here
-            hot = i += 4;
-            //5: component
-            if (outFile[i] != '\r')
-            {
-                while (outFile[i] != '\r')
+                int i = 1;
+                string temp = null;
+                if (settingFile[0] == '0')
                 {
-                    ++i;
-                    if (outFile[i] == '\t')
+                    settingFile[0] = '/';
+                    defaultSet = new List<int>(_num_setting);
+                    while (settingFile[i] != '\0')
                     {
-                        temp = new string(outFile, hot, i - hot);
-                        tempIndex = int.Parse(temp);
-                        requiredComp[tempIndex] = true;
-                        hot = ++i;
-                        while (outFile[i] != '\t') ++i;
-                        temp = new string(outFile, hot, i - hot);
-                        prices[tempIndex] = double.Parse(temp);
-                        hot = ++i;
-                    }                       
+                        if (settingFile[i] == '\n' && settingFile[++i] != '/')
+                        {
+                            if (settingFile[i] == '\0') break;
+                            temp = new string(settingFile, i++, 1);
+                            defaultSet.Add(int.Parse(temp));
+                        }
+                        ++i;
+                    }
+                    settingFile[i] = '#';
+                    settingFile[++i] = '\0';
                 }
+
+                try { File.SetAttributes(PGPath.exeDirection + "DS.SET", FileAttributes.Normal); }
+                catch { }
+                FileStream fs = new FileStream(PGPath.exeDirection + "DS.SET", FileMode.Create);
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
+                sw.Write(new string(settingFile,0,i + 1));
+                sw.Flush();
+                sw.Close();
+                File.SetAttributes(PGPath.exeDirection + "DS.SET", FileAttributes.Hidden);
+                fs.Close();
             }
+            #endregion
         }
     }
 }

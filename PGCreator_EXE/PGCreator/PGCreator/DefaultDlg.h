@@ -1,5 +1,6 @@
 #pragma once
 #include "afxwin.h"
+#include "NotepadDlg.h"
 
 
 // CDefaultDlg ¶Ô»°¿ò
@@ -25,4 +26,6 @@ public:
 //	CButton m_Rsdc;
 	virtual BOOL OnInitDialog();
 	void OutputInfo(FILE* fp);
+	CNotepadDlg m_notepadDlg;
+	afx_msg void OnClickedButtonNotepad();
 };

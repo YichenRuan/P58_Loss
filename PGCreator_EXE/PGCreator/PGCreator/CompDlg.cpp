@@ -6,6 +6,7 @@
 #include "CompDlg.h"
 #include "afxdialogex.h"
 
+CString compName[NUM_COMP] = {L"梁柱节点",L"剪力墙",L"石膏板隔墙",L"玻璃幕墙",L"店面",L"天花板",L"吊顶灯",L"砌体墙",L"墙面装饰"};
 
 // CCompDlg 对话框
 
@@ -64,22 +65,11 @@ BOOL CCompDlg::OnInitDialog()
 	p_Lcomp->InsertColumn(3,L"价格 (美元)", LVCFMT_CENTER,188);
 	p_Lcomp->DeleteColumn(0);
 
-	p_Lcomp->InsertItem(0,L" ");
-	p_Lcomp->SetItemText(0,1,L"梁柱节点");
-	p_Lcomp->InsertItem(1,L" ");
-	p_Lcomp->SetItemText(1,1,L"剪力墙");
-	p_Lcomp->InsertItem(2,L" ");
-	p_Lcomp->SetItemText(2,1,L"石膏板隔墙");
-	p_Lcomp->InsertItem(3,L" ");
-	p_Lcomp->SetItemText(3,1,L"玻璃幕墙");
-	p_Lcomp->InsertItem(4,L" ");
-	p_Lcomp->SetItemText(4,1,L"店面");
-	p_Lcomp->InsertItem(5,L" ");
-	p_Lcomp->SetItemText(5,1,L"天花板");
-	p_Lcomp->InsertItem(6,L" ");
-	p_Lcomp->SetItemText(6,1,L"吊顶灯");
-	p_Lcomp->InsertItem(7,L" ");
-	p_Lcomp->SetItemText(7,1,L"砌体墙");
+	for (int i=NUM_COMP-1;0<=i;--i)
+	{
+		p_Lcomp->InsertItem(0,L" ");
+		p_Lcomp->SetItemText(0,1,compName[i]);
+	}
 
 	for (int i=0;i<NUM_COMP;++i)
 	{

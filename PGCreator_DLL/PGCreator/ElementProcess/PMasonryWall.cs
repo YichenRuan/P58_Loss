@@ -162,7 +162,7 @@ namespace P58_Loss.ElementProcess
             {
                 Material material = _doc.GetElement
                     (wall.WallType.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()) as Material;
-                if (material.MaterialCategory == "Masonry" || material.MaterialCategory == "砌体")
+                if (material.MaterialCategory == _addiInfo.materialTypes[(byte)PGMaterialType.Masonry])
                 {
                     _masonryWalls.Add(wall);
                 }

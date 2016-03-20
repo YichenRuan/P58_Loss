@@ -16,7 +16,6 @@ namespace P58_Loss
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class PGCreator : IExternalCommand
     {
-        private string exeDirection = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + @"PGCreator";
         private static readonly int MAX_BUFF = 10240;           //10 KB
         private bool normalExit = false;
         
@@ -36,25 +35,25 @@ namespace P58_Loss
             inFile += title + "\t"
                    + bldgName + "\t\r\n";
             MyLevel.WriteLevelsToInFile(ref inFile);
-            try { File.SetAttributes(exeDirection + @"\PGCTF.IN", FileAttributes.Normal); }
+            try { File.SetAttributes(PGPath.exeDirection + "PGCTF.IN", FileAttributes.Normal); }
             catch { }
 
-            FileStream fs = new FileStream(exeDirection + @"\PGCTF.IN", FileMode.Create);
+            FileStream fs = new FileStream(PGPath.exeDirection + "PGCTF.IN", FileMode.Create);
             StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);           //Write in ANSI
             sw.Write(inFile);
             sw.Flush();
             sw.Close();
             fs.Close();
         }
-        private char[] DoInput()
+        private char[] DoInput(string fileName)
         {
-            Stream instream = File.OpenRead(exeDirection + @"\PGCTF.OUT");
+            Stream instream = File.OpenRead(PGPath.exeDirection + fileName);
             BufferedStream bfs = new BufferedStream(instream);
             byte[] buffer = new byte[MAX_BUFF];
             bfs.Read(buffer, 0, buffer.Length);
             bfs.Close();
             instream.Close();
-            File.SetAttributes(exeDirection + @"\PGCTF.OUT", FileAttributes.Hidden);
+            File.SetAttributes(PGPath.exeDirection + fileName, FileAttributes.Hidden);
             return System.Text.Encoding.Default.GetString(buffer).ToCharArray();
         }   
             
@@ -74,13 +73,13 @@ namespace P58_Loss
                 MyLevel.SetMyLevel(LevelCollector);
                 //IO
                 DoOutput(doc);
-                Process process = Process.Start(exeDirection + @"\PGCreator.exe");
+                Process process = Process.Start(PGPath.exeDirection + "PGCreator.exe");
                 process.WaitForExit();
-                char[] outFile = DoInput();
+                char[] outFile = DoInput("PGCTF.OUT");
                 //Process
                 if (outFile[0] == '0')
                 {
-                    AdditionalInfo addiInfo = new AdditionalInfo(DoInput());
+                    AdditionalInfo addiInfo = new AdditionalInfo(outFile, DoInput("DS.SET"));
                     MyLevel.AdjustLevels(addiInfo);
                     PGWriter.SetWriter(addiInfo);
                     AbandonmentWriter.SetWriter(addiInfo);
@@ -88,7 +87,8 @@ namespace P58_Loss
 
                     if (addiInfo.requiredComp[(byte)PGComponents.BeamColumnJoint])  pgWriter.UpdatePGs(PBeamColumnJoints.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.ShearWall])        pgWriter.UpdatePGs(PShearWall.GetPG(doc, addiInfo));
-                    if (addiInfo.requiredComp[(byte)PGComponents.GypWall])          pgWriter.UpdatePGs(PGypWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.GypWall]
+                     || addiInfo.requiredComp[(byte)PGComponents.WallFinish])       pgWriter.UpdatePGs(PGypWall.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.CurtainWall])      pgWriter.UpdatePGs(PCurtainWall.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.Storefront])       pgWriter.UpdatePGs(PStorefront.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.Ceiling]

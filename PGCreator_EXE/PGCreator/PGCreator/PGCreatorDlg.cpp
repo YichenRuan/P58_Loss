@@ -14,9 +14,10 @@
 #define new DEBUG_NEW
 #endif
 
+char CPGCreatorDlg::settingDoc[] = {'\0'};
+bool CPGCreatorDlg::isSettingChanged = false;
 
 // CPGCreatorDlg 对话框
-
 
 
 CPGCreatorDlg::CPGCreatorDlg(CWnd* pParent /*=NULL*/)
@@ -26,8 +27,10 @@ CPGCreatorDlg::CPGCreatorDlg(CWnd* pParent /*=NULL*/)
 	m_brush.CreateSolidBrush(RGB(200,200,200));
 	char* temp_inName = "\\PGCreator\\PGCTF.IN";
 	char* temp_outName = "\\PGCreator\\PGCTF.OUT";
+	char* temp_settingName = "\\PGCreator\\DS.SET";
 	strcpy_s(inFileName,temp_inName);
 	strcpy_s(outFileName,temp_outName);
+	strcpy_s(settingFileName,temp_settingName);
 }
 
 void CPGCreatorDlg::DoDataExchange(CDataExchange* pDX)
@@ -63,6 +66,7 @@ BOOL CPGCreatorDlg::OnInitDialog()
 	//AfxMessageBox(A2T(GetProgramDir()));
 	_getcwd(inPath,MAX_PATH);
 	_getcwd(outPath,MAX_PATH);
+	_getcwd(settingPath,MAX_PATH);
 	ReadInFile();
 	if (inFile[0] != '0')
 	{
@@ -75,11 +79,13 @@ BOOL CPGCreatorDlg::OnInitDialog()
 		m_tab.InsertItem(1,L"标高调整");
 		m_tab.InsertItem(2,L"默认值设置");
 		m_tab.InsertItem(3,L"构件设置");
+		m_tab.InsertItem(4,L"材质映射");
 
 		m_infoDlg.Create(IDD_INFO_DIALOG,GetDlgItem(IDC_TAB));
 		m_levelDlg.Create(IDD_LEVEL_DIALOG,GetDlgItem(IDC_TAB));
 		m_defaultDlg.Create(IDD_DEFAULT_DIALOG,GetDlgItem(IDC_TAB));
 		m_compDlg.Create(IDD_COMP_DIALOG,GetDlgItem(IDC_TAB));
+		m_mateDlg.Create(IDD_MATERIAL_DIALOG,GetDlgItem(IDC_TAB));
 
 		CRect rs;
 		m_tab.GetClientRect(&rs);
@@ -88,6 +94,7 @@ BOOL CPGCreatorDlg::OnInitDialog()
 		m_levelDlg.MoveWindow(&rs);
 		m_defaultDlg.MoveWindow(&rs);
 		m_compDlg.MoveWindow(&rs);
+		m_mateDlg.MoveWindow(&rs);
 
 		m_infoDlg.ShowWindow(TRUE);
 		m_tab.SetCurSel(0);
@@ -147,24 +154,37 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_levelDlg.ShowWindow(FALSE);
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(FALSE);
+		m_mateDlg.ShowWindow(FALSE);
 		break;
 	case 1:
 		m_infoDlg.ShowWindow(FALSE);
 		m_levelDlg.ShowWindow(TRUE);
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(FALSE);
+		m_mateDlg.ShowWindow(FALSE);
 		break;
 	case 2:
 		m_infoDlg.ShowWindow(FALSE);
 		m_levelDlg.ShowWindow(FALSE);
 		m_defaultDlg.ShowWindow(TRUE);
 		m_compDlg.ShowWindow(FALSE);
+		m_mateDlg.ShowWindow(FALSE);
 		break;
 	case 3:
 		m_infoDlg.ShowWindow(FALSE);
 		m_levelDlg.ShowWindow(FALSE);
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(TRUE);
+		m_mateDlg.ShowWindow(FALSE);
+		break;
+	case 4:
+		m_infoDlg.ShowWindow(FALSE);
+		m_levelDlg.ShowWindow(FALSE);
+		m_defaultDlg.ShowWindow(FALSE);
+		m_compDlg.ShowWindow(FALSE);
+		m_mateDlg.ShowWindow(TRUE);
+		break;
+	default:
 		break;
 	}
 }
@@ -246,7 +266,20 @@ void CPGCreatorDlg::OnBnClickedOk()
 	m_levelDlg.OutputInfo(fp);
 	m_defaultDlg.OutputInfo(fp);
 	m_compDlg.OutputInfo(fp);
+	m_mateDlg.OutputInfo(fp);
 	fclose(fp);
+
+	if (isSettingChanged)
+	{
+		settingDoc[0] = '0';
+		FILE* fp2;
+		strcat_s(settingPath,settingFileName);
+		CString C_settingPath(settingPath);
+		SetFileAttributes(C_settingPath,FILE_ATTRIBUTE_NORMAL);
+		fopen_s(&fp2,settingPath,"w+");
+		fprintf_s(fp2,settingDoc);
+		fclose(fp2);
+	}
 	CDialogEx::OnOK();
 }
 
@@ -281,4 +314,30 @@ void CPGCreatorDlg::OnBnClickedCancel()
 	fprintf_s(fp,"1\n");
 	fclose(fp);
 	CDialogEx::OnCancel();
+}
+
+void CPGCreatorDlg::TcharToChar (const TCHAR * tchar, char * _char)  
+{  
+	int iLength ;    
+	iLength = WideCharToMultiByte(CP_ACP, 0, tchar, -1, NULL, 0, NULL, NULL);    
+	WideCharToMultiByte(CP_ACP, 0, tchar, -1, _char, iLength, NULL, NULL);   
+}  
+
+void CPGCreatorDlg::CharToTchar (const char * _char, TCHAR * tchar)  
+{  
+	int iLength ;  
+
+	iLength = MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, NULL, 0) ;  
+	MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, tchar, iLength) ;  
+} 
+
+void CPGCreatorDlg::GetSetting(char* setting)
+{
+	strcpy_s(settingDoc,setting);
+	isSettingChanged = true;
+}
+
+CString CPGCreatorDlg::GiveSettingCopy()
+{
+	return CString(settingDoc);
 }

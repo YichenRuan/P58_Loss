@@ -40,7 +40,7 @@ namespace P58_Loss.ElementProcess
                 {
                     Material panelMaterial = 
                         _doc.GetElement(panelType.get_Parameter(BuiltInParameter.MATERIAL_ID_PARAM).AsElementId()) as Material;
-                    if (panelMaterial.MaterialCategory != "Glass" && panelMaterial.MaterialCategory != "玻璃")
+                    if (panelMaterial.MaterialCategory != _addiInfo.materialTypes[(byte)PGMaterialType.Glass])
                     {
                         return false;
                     }
@@ -57,7 +57,7 @@ namespace P58_Loss.ElementProcess
                     {
                         panelMaterial = _doc.GetElement(materialId) as Material;
 
-                        if (panelMaterial.MaterialCategory == "Glass" || panelMaterial.MaterialCategory == "玻璃")
+                        if (panelMaterial.MaterialCategory == _addiInfo.materialTypes[(byte)PGMaterialType.Glass])
                         {
                             isContainGlass = true;
                             break;

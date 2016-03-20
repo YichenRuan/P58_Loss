@@ -27,8 +27,6 @@ public:
 	CButton m_Bpath;
 //	CEdit m_Epath;
 
-	void CharToTchar (const char * _char, TCHAR * tchar);
-	void TcharToChar (const TCHAR * tchar, char * _char);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnClickedButtonPath();
 	void InFileInterpret(char* inFile,std::queue<int> &infoQueue);

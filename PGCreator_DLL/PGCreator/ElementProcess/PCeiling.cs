@@ -24,6 +24,7 @@ namespace P58_Loss.ElementProcess
             private static Dictionary<string, int> _dictionary = new Dictionary<string, int>(13);       //Total num of FGs = 12
             private static int _num_Rece = 0;
             private static int _num_Pend = 0;
+            private static bool[] isFoundLighting = {false,false};
 
             private static PGItem _rece, _pend;
 
@@ -129,21 +130,29 @@ namespace P58_Loss.ElementProcess
                     foreach (Element lighting in lightingCollector)
                     {
                         BoundingBoxXYZ bbLighting = lighting.get_BoundingBox(_doc.ActiveView);
-                        if (bbLighting.Max.Z - bbLighting.Min.Z < ErrorCtrl_Lighting) ++_num_Rece;
-                        else ++_num_Pend;
+                        if (bbLighting.Max.Z - bbLighting.Min.Z < ErrorCtrl_Lighting)
+                        {
+                            ++_num_Rece;
+                            isFoundLighting[0] = true;
+                        }
+                        else
+                        {
+                            ++_num_Pend;
+                            isFoundLighting[1] = true;
+                        }
                     }
 
                     _rece.Num[_floor] += _num_Rece;
                     _pend.Num[_floor] += _num_Pend;
 
-                    _num_Pend = 0;
+                    _num_Rece = 0;
                     _num_Pend = 0;
                 }
             }
             public static void AddLighting()
             {
-                _PGItems.Add(_rece);
-                _PGItems.Add(_pend);
+                if(isFoundLighting[0]) _PGItems.Add(_rece);
+                if (isFoundLighting[1]) _PGItems.Add(_pend);
             }
         }
 
