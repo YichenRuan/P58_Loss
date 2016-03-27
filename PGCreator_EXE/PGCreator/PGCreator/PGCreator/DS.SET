@@ -1,9 +1,20 @@
-0/Defaut Value Setting
+//Default Value Setting
 //Please read the help file for more information
 //---Shear Wall---B1044
-9
-10
+0;
+0;
 //---Gypsum Wall---C1011
-11
-12
-//End
+0;
+0;
+//---Ceiling---C3032
+0;
+0;
+//---Ceiling Lighting---C3033-C3034
+0;
+0;
+//---Masonry Wall---B105
+0;
+0;
+//---Duct---D3041
+0;
+//End#

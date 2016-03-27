@@ -14,9 +14,6 @@
 #define new DEBUG_NEW
 #endif
 
-char CPGCreatorDlg::settingDoc[] = {'\0'};
-bool CPGCreatorDlg::isSettingChanged = false;
-
 // CPGCreatorDlg 对话框
 
 
@@ -200,7 +197,6 @@ void CPGCreatorDlg::ReadInFile()
 	FILE* fp;
 	//char reWrite[30] = "DO NOT EDIT OR DELETE!!!";
 	strcat_s(inPath,inFileName);
-	CString C_inPath(inPath);
 	fopen_s(&fp,inPath,"r+");
 	if (fp != NULL)
 	{
@@ -211,7 +207,7 @@ void CPGCreatorDlg::ReadInFile()
 		inFile[0] = 'A';
 		return;
 	}
-	SetFileAttributes(C_inPath,FILE_ATTRIBUTE_HIDDEN);
+	SetFileAttributes((CString)inPath,FILE_ATTRIBUTE_HIDDEN);
 	fclose(fp);
 	/*
 	SetFileAttributes(C_inPath,FILE_ATTRIBUTE_NORMAL);
@@ -258,8 +254,7 @@ void CPGCreatorDlg::OnBnClickedOk()
 	// TODO: 在此添加控件通知处理程序代码
 	FILE* fp;
 	strcat_s(outPath,outFileName);
-	CString C_outPath(outPath);
-	SetFileAttributes(C_outPath,FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributes((CString)outPath,FILE_ATTRIBUTE_NORMAL);
 	fopen_s(&fp,outPath,"w+");
 	fprintf_s(fp,"0\n%s\n",m_infoDlg.GetFilePath());
 	m_infoDlg.OutputInfo(fp);
@@ -267,19 +262,9 @@ void CPGCreatorDlg::OnBnClickedOk()
 	m_defaultDlg.OutputInfo(fp);
 	m_compDlg.OutputInfo(fp);
 	m_mateDlg.OutputInfo(fp);
+	m_defaultDlg.OutputSetting(fp);
 	fclose(fp);
 
-	if (isSettingChanged)
-	{
-		settingDoc[0] = '0';
-		FILE* fp2;
-		strcat_s(settingPath,settingFileName);
-		CString C_settingPath(settingPath);
-		SetFileAttributes(C_settingPath,FILE_ATTRIBUTE_NORMAL);
-		fopen_s(&fp2,settingPath,"w+");
-		fprintf_s(fp2,settingDoc);
-		fclose(fp2);
-	}
 	CDialogEx::OnOK();
 }
 
@@ -308,8 +293,7 @@ void CPGCreatorDlg::OnBnClickedCancel()
 	// TODO: 在此添加控件通知处理程序代码
 	FILE* fp;
 	strcat_s(outPath,outFileName);
-	CString C_outPath(outPath);
-	SetFileAttributes(C_outPath,FILE_ATTRIBUTE_NORMAL);
+	SetFileAttributes((CString)outPath,FILE_ATTRIBUTE_NORMAL);
 	fopen_s(&fp,outPath,"w+");
 	fprintf_s(fp,"1\n");
 	fclose(fp);
@@ -330,14 +314,3 @@ void CPGCreatorDlg::CharToTchar (const char * _char, TCHAR * tchar)
 	iLength = MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, NULL, 0) ;  
 	MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, tchar, iLength) ;  
 } 
-
-void CPGCreatorDlg::GetSetting(char* setting)
-{
-	strcpy_s(settingDoc,setting);
-	isSettingChanged = true;
-}
-
-CString CPGCreatorDlg::GiveSettingCopy()
-{
-	return CString(settingDoc);
-}

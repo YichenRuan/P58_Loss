@@ -22,7 +22,8 @@
         Ceiling,
         CeilingLighting,
         MasonryWall,
-        WallFinish
+        WallFinish,
+        Duct
     }
 
     public enum PGMaterialType : byte
@@ -44,8 +45,13 @@
         ShearWall_Curtain,
         GypWall_Stud,
         GypWall_BoundaryCondition,
+        Ceiling_LateralSupport,
         Ceiling_Ip,
-        Lighting_Support
+        Lighting_Support,
+        Lighting_SeisRated,
+        MasonryWall_Grout,
+        MasonryWall_Mechanics,
+        Duct_Material
     }
 
     public enum Direction : byte
@@ -76,10 +82,14 @@
         WallBeyondRoof,
         NonBearingWallNonGyp,               //C1011
         WallBottomError,
+        GypWallBoundConflictHi,
         CurtainWallPanelNotGlazed,          //B2022, B2023
         CeilingLevelError,                  //C3032
+        CeilingSDCConflictLatSupport,
+        CeilingSDCConflictIp,
         MasonryWallThicknessOOR,            //B1015
-        TooManyFinishes
+        TooManyFinishes,
+        DuctLevelError                      //D3041
     }
 
     public enum MomentFrameType : byte
@@ -98,7 +108,8 @@
         C,
         D,
         E,
-        F
+        F,
+        OSHPD
     }
 
 }

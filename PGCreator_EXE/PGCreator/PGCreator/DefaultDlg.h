@@ -26,6 +26,7 @@ public:
 //	CButton m_Rsdc;
 	virtual BOOL OnInitDialog();
 	void OutputInfo(FILE* fp);
+	void OutputSetting(FILE* fp);
 	CNotepadDlg m_notepadDlg;
 	afx_msg void OnClickedButtonNotepad();
 };

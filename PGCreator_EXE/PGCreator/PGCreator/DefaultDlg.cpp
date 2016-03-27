@@ -52,13 +52,14 @@ BOOL CDefaultDlg::OnInitDialog()
 	CButton* p_Rsdc = (CButton*)GetDlgItem(IDC_RADIO_SDCA);
 	p_Rmf->SetCheck(TRUE);
 	p_Rsdc->SetCheck(TRUE);
+	m_notepadDlg.ReadExternalSetting();
 	return TRUE;
 }
 
 void CDefaultDlg::OutputInfo(FILE* fp)
 {
 	int mf = GetCheckedRadioButton( IDC_RADIO_SMF, IDC_RADIO_ucMF ) - IDC_RADIO_SMF;
-	int sdc = GetCheckedRadioButton( IDC_RADIO_SDCA, IDC_RADIO_SDCF ) - IDC_RADIO_SDCA;
+	int sdc = GetCheckedRadioButton( IDC_RADIO_SDCA, IDC_RADIO_SDCO ) - IDC_RADIO_SDCA;
 	fprintf_s(fp,"%d\t%d\t\n",mf,sdc);
 
 }
@@ -67,4 +68,9 @@ void CDefaultDlg::OnClickedButtonNotepad()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	m_notepadDlg.DoModal();
+}
+
+void CDefaultDlg::OutputSetting(FILE* fp)
+{
+	m_notepadDlg.OutputInfo(fp);
 }

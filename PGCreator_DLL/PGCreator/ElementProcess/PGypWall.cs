@@ -55,6 +55,8 @@ namespace P58_Loss.ElementProcess
             private static Level _level_bottom, _level_top;
             private static double _offset_bottom, _offset_top;
             private static double _noConsHeight;
+            private static int _boundaryCond = _addiInfo.defaultSet[(byte)DefaultSet.GypWall_BoundaryCondition];
+            private static int _stud = _addiInfo.defaultSet[(byte)DefaultSet.GypWall_Stud];
 
             private static double _area;
             private static Dictionary<string, int> _dictionary = new Dictionary<string, int>(17);   //total 16
@@ -90,36 +92,76 @@ namespace P58_Loss.ElementProcess
             private static void Update(WallHightMode hiMode)
             {
                 string FGCode = "";
+                bool readyToWrite = true;
                 
                 if (_reportRule == ReportRule.Gyp || _reportRule == ReportRule.Both)
                 {
-                    switch (hiMode)
+                    FGCode = "C1011.0";
+                    if (_stud == 0)
                     {
-                        case WallHightMode.Full:
-                            FGCode = "C1011.001a";
-                            break;
-                        case WallHightMode.Partial:
-                            FGCode = "C1011.001b";
-                            break;
+                        switch (hiMode)
+                        {
+                            case WallHightMode.Full:
+                                if (_boundaryCond == 0) FGCode += "01a";
+                                else if (_boundaryCond == 1)
+                                {
+                                    _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.GypWallBoundConflictHi);
+                                    readyToWrite = false;
+                                }
+                                else if (_boundaryCond == 2) FGCode += "01c";
+                                else FGCode += "01d";
+                                break;
+                            case WallHightMode.Partial:
+                                if (_boundaryCond != 1)
+                                {
+                                    _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.GypWallBoundConflictHi);
+                                    readyToWrite = false;
+                                }
+                                else FGCode += "01b";
+                                break;
+                        }
                     }
-                    WriteIntoPG(FGCode, "石膏板隔墙", "ShiGaoBanGeQiang", PGComponents.GypWall, 1300.0);
+                    else
+                    {
+                        if (hiMode == WallHightMode.Full && _boundaryCond == 0) FGCode += "11a";
+                        else
+                        {
+                            _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.GypWallBoundConflictHi);
+                            readyToWrite = false;
+                        }
+                    }
+                    
+                    if(readyToWrite) WriteIntoPG(FGCode, "石膏板隔墙", "ShiGaoBanGeQiang", PGComponents.GypWall, 1300.0);
                 }
                 if (_reportRule == ReportRule.Finish || _reportRule == ReportRule.Both)
                 {
                     FGCode = "C3011.";
+                    readyToWrite = true;
                     if (_finishType == FinishType.OneWallpaper || _finishType == FinishType.TwoWallpaper) FGCode += "001";
                     else if (_finishType == FinishType.OneCeramic || _finishType == FinishType.TwoCeramic) FGCode += "002";
                     else if (_finishType == FinishType.OneWood || _finishType == FinishType.TwoWood) FGCode += "003";
                     switch (hiMode)
                     {
                         case WallHightMode.Full:
-                            FGCode += "a";
+                            if (_boundaryCond == 0) FGCode += 'a';
+                            else if (_boundaryCond == 1)
+                            {
+                                _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.GypWallBoundConflictHi);
+                                readyToWrite = false;
+                            }
+                            else if (_boundaryCond == 2) FGCode += 'c';
+                            else FGCode += 'd';
                             break;
                         case WallHightMode.Partial:
-                            FGCode += "b";
+                            if(_boundaryCond != 1)
+                            {
+                                _abandonWriter.WriteAbandonment(_wall, AbandonmentTable.GypWallBoundConflictHi);
+                                readyToWrite = false;
+                            }
+                            else FGCode += "b";
                             break;
                     }
-                    WriteIntoPG(FGCode, "表面装饰", "BiaoMianZhuangShi", PGComponents.WallFinish, 900.0);
+                    if(readyToWrite) WriteIntoPG(FGCode, "表面装饰", "BiaoMianZhuangShi", PGComponents.WallFinish, 900.0);
                 }
             }
 

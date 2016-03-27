@@ -79,7 +79,7 @@ namespace P58_Loss
                 //Process
                 if (outFile[0] == '0')
                 {
-                    AdditionalInfo addiInfo = new AdditionalInfo(outFile, DoInput("DS.SET"));
+                    AdditionalInfo addiInfo = new AdditionalInfo(outFile);
                     MyLevel.AdjustLevels(addiInfo);
                     PGWriter.SetWriter(addiInfo);
                     AbandonmentWriter.SetWriter(addiInfo);
@@ -95,8 +95,19 @@ namespace P58_Loss
                      || addiInfo.requiredComp[(byte)PGComponents.CeilingLighting])  pgWriter.UpdatePGs(PCeiling.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.MasonryWall])      pgWriter.UpdatePGs(PMasonryWall.GetPG(doc, addiInfo));
                     normalExit = true;
+                    if (addiInfo.requiredComp[(byte)PGComponents.Duct]) pgWriter.UpdatePGs(PDuct.GetPG(doc, addiInfo));
+                }
+ 
+                //Test
+                FilteredElementCollector coll = new FilteredElementCollector(doc);
+                ElementClassFilter filter = new ElementClassFilter(typeof(FamilySymbol));
+                coll.WherePasses(filter);
+                foreach (FamilySymbol fi in coll)
+                {
+                    errorWriter.WriteError(fi.FamilyName + "\r\n");
+                }
 
-                }   
+
             }
             catch (Exception e)
             {

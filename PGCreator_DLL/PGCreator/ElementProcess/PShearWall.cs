@@ -40,139 +40,155 @@ namespace P58_Loss.ElementProcess
                 else return Direction.Undefined;
             }
             private static void GetBoundCond_and_Rein(int i)
-            {    
-                #region Boundary Condition
-                //Note: only structural walls/columns are considered as boundary elements
-                ElementName[] boundaryEle = { ElementName.Level, ElementName.Slab };         //[0] for left, [1] for right
-
+            {
                 XYZ bottom = new XYZ(_boundingBox.Min.X, _boundingBox.Min.Y,
-                    _myLevel.GetElevation(i - 1) + _height * ErrorCTRL_WallBoundingBox);
+                        _myLevel.GetElevation(i - 1) + _height * ErrorCTRL_WallBoundingBox);
                 XYZ top = new XYZ(_boundingBox.Max.X, _boundingBox.Max.Y,
                     _myLevel.GetElevation(i) - _height * ErrorCTRL_WallBoundingBox);
                 Outline outline = new Outline(bottom, top);
                 BoundingBoxIntersectsFilter bbFilter = new BoundingBoxIntersectsFilter(outline);
-                FilteredElementCollector intersectedWalls = new FilteredElementCollector(_doc);
-                FilteredElementCollector intersectedColumns = new FilteredElementCollector(_doc);
-                List<ElementFilter> listFilter = new List<ElementFilter>();
-                intersectedWalls.WherePasses(bbFilter).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_Walls));
-                intersectedColumns.WherePasses(bbFilter).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_StructuralColumns));
-
-                foreach (Element ele in intersectedWalls)
-                {        
-                    #region Wall Intersection
-                    {
-                        Wall wall = ele as Wall;
-                        if (GetWallDirection(wall) == _direction) continue;
-                        if (wall.StructuralUsage == StructuralWallUsage.NonBearing) continue;
-                        if (wall.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
-                                        < _height * ErrorCTRL_WallBoundaryEleHeight ||
-                                         _myLevel.GetElevation(i) - wall.get_BoundingBox(_doc.ActiveView).Min.Z
-                                        < _height * ErrorCTRL_WallBoundaryEleHeight) continue;
-                        Curve wallCurve = ((LocationCurve)wall.Location).Curve;
-                        switch (_direction)
-                        {
-                            case Direction.X:
-                                if (System.Math.Abs(wallCurve.GetEndPoint(0).X - _boundingBox.Min.X)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    if (boundaryEle[0] != ElementName.StruColumn)
-                                        boundaryEle[0] = ElementName.ShearWall;
-                                }
-                                else if (System.Math.Abs(wallCurve.GetEndPoint(0).X - _boundingBox.Max.X)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    if (boundaryEle[1] != ElementName.StruColumn)
-                                        boundaryEle[1] = ElementName.ShearWall;
-                                }
-                                break;
-                            case Direction.Y:
-                                if (System.Math.Abs(wallCurve.GetEndPoint(0).Y - _boundingBox.Min.Y)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    if (boundaryEle[0] != ElementName.StruColumn)
-                                        boundaryEle[0] = ElementName.ShearWall;
-                                }
-                                else if (System.Math.Abs(wallCurve.GetEndPoint(0).Y - _boundingBox.Max.Y)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    if (boundaryEle[1] != ElementName.StruColumn)
-                                        boundaryEle[1] = ElementName.ShearWall;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    #endregion
-                }
-
-                foreach (Element ele in intersectedColumns)
+                #region Boundary Condition
+                //Note: only structural walls/columns are considered as boundary elements
                 {
-                    #region Column Intersecion
-                    {
-                        if (ele.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
-                                        < _height * ErrorCTRL_WallBoundaryEleHeight ||
-                                        _myLevel.GetElevation(i) - ele.get_BoundingBox(_doc.ActiveView).Min.Z
-                                        < _height * ErrorCTRL_WallBoundaryEleHeight) continue;
-                        XYZ columnOri = ((LocationPoint)ele.Location).Point;
-                        switch (_direction)
-                        {
-                            case Direction.X:
-                                if (System.Math.Abs(columnOri.X - _boundingBox.Min.X)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    boundaryEle[0] = ElementName.StruColumn;
-                                }
-                                else if (System.Math.Abs(columnOri.X - _boundingBox.Max.X)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    boundaryEle[1] = ElementName.StruColumn;
-                                }
-                                break;
-                            case Direction.Y:
-                                if (System.Math.Abs(columnOri.Y - _boundingBox.Min.Y)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    boundaryEle[0] = ElementName.StruColumn;
-                                }
-                                else if (System.Math.Abs(columnOri.Y - _boundingBox.Max.Y)
-                                    < ErrorCTRL_WallIntersection * _thickness)
-                                {
-                                    boundaryEle[1] = ElementName.StruColumn;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    #endregion
-                }
+                    ElementName[] boundaryEle = { ElementName.Level, ElementName.Level };         //[0] for left, [1] for right
+                    FilteredElementCollector intersectedWalls = new FilteredElementCollector(_doc);
+                    FilteredElementCollector intersectedColumns = new FilteredElementCollector(_doc);
+                    List<ElementFilter> listFilter = new List<ElementFilter>();
+                    intersectedWalls.WherePasses(bbFilter).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_Walls));
+                    intersectedColumns.WherePasses(bbFilter).WherePasses(new ElementCategoryFilter(BuiltInCategory.OST_StructuralColumns));
 
-                if (boundaryEle[0] != boundaryEle[1]) _boundaryCondition = ShearWallBoundaryCondition.Rectangular;
-                else if (boundaryEle[0] == ElementName.ShearWall) _boundaryCondition = ShearWallBoundaryCondition.ReturnFlange;
-                else if (boundaryEle[0] == ElementName.StruColumn) _boundaryCondition = ShearWallBoundaryCondition.Column;
+                    foreach (Element ele in intersectedWalls)
+                    {
+                        #region Wall Intersection
+                        {
+                            Wall wall = ele as Wall;
+                            if (GetWallDirection(wall) == _direction) continue;
+                            if (wall.StructuralUsage == StructuralWallUsage.NonBearing) continue;
+                            if (wall.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
+                                            < _height * ErrorCTRL_WallBoundaryEleHeight ||
+                                             _myLevel.GetElevation(i) - wall.get_BoundingBox(_doc.ActiveView).Min.Z
+                                            < _height * ErrorCTRL_WallBoundaryEleHeight) continue;
+                            Curve wallCurve = ((LocationCurve)wall.Location).Curve;
+                            switch (_direction)
+                            {
+                                case Direction.X:
+                                    if (System.Math.Abs(wallCurve.GetEndPoint(0).X - _boundingBox.Min.X)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        if (boundaryEle[0] != ElementName.StruColumn)
+                                            boundaryEle[0] = ElementName.ShearWall;
+                                    }
+                                    else if (System.Math.Abs(wallCurve.GetEndPoint(0).X - _boundingBox.Max.X)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        if (boundaryEle[1] != ElementName.StruColumn)
+                                            boundaryEle[1] = ElementName.ShearWall;
+                                    }
+                                    break;
+                                case Direction.Y:
+                                    if (System.Math.Abs(wallCurve.GetEndPoint(0).Y - _boundingBox.Min.Y)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        if (boundaryEle[0] != ElementName.StruColumn)
+                                            boundaryEle[0] = ElementName.ShearWall;
+                                    }
+                                    else if (System.Math.Abs(wallCurve.GetEndPoint(0).Y - _boundingBox.Max.Y)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        if (boundaryEle[1] != ElementName.StruColumn)
+                                            boundaryEle[1] = ElementName.ShearWall;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        #endregion
+                    }
+                    foreach (Element ele in intersectedColumns)
+                    {
+                        #region Column Intersecion
+                        {
+                            if (ele.get_BoundingBox(_doc.ActiveView).Max.Z - _myLevel.GetElevation(i - 1)
+                                            < _height * ErrorCTRL_WallBoundaryEleHeight ||
+                                            _myLevel.GetElevation(i) - ele.get_BoundingBox(_doc.ActiveView).Min.Z
+                                            < _height * ErrorCTRL_WallBoundaryEleHeight) continue;
+                            XYZ columnOri = ((LocationPoint)ele.Location).Point;
+                            switch (_direction)
+                            {
+                                case Direction.X:
+                                    if (System.Math.Abs(columnOri.X - _boundingBox.Min.X)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        boundaryEle[0] = ElementName.StruColumn;
+                                    }
+                                    else if (System.Math.Abs(columnOri.X - _boundingBox.Max.X)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        boundaryEle[1] = ElementName.StruColumn;
+                                    }
+                                    break;
+                                case Direction.Y:
+                                    if (System.Math.Abs(columnOri.Y - _boundingBox.Min.Y)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        boundaryEle[0] = ElementName.StruColumn;
+                                    }
+                                    else if (System.Math.Abs(columnOri.Y - _boundingBox.Max.Y)
+                                        < ErrorCTRL_WallIntersection * _thickness)
+                                    {
+                                        boundaryEle[1] = ElementName.StruColumn;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        #endregion
+                    }
+                    if (boundaryEle[0] == ElementName.Level && boundaryEle[1] == ElementName.Level)
+                        _boundaryCondition = ShearWallBoundaryCondition.Rectangular;
+                    else if (boundaryEle[0] == ElementName.ShearWall && boundaryEle[1] == ElementName.ShearWall)
+                        _boundaryCondition = ShearWallBoundaryCondition.ReturnFlange;
+                    else if (boundaryEle[0] == ElementName.StruColumn && boundaryEle[1] == ElementName.StruColumn)
+                        _boundaryCondition = ShearWallBoundaryCondition.Column;
+                    else
+                    {
+                        if (_addiInfo.defaultSet[(byte)DefaultSet.ShearWall_BoundaryCondition] == 0)
+                            _boundaryCondition = ShearWallBoundaryCondition.Rectangular;
+                        else if (_addiInfo.defaultSet[(byte)DefaultSet.ShearWall_BoundaryCondition] == 1)
+                            _boundaryCondition = ShearWallBoundaryCondition.ReturnFlange;
+                        else _boundaryCondition = ShearWallBoundaryCondition.Column;
+                    }
+                }
                 #endregion
                 #region Reinforcement
-                ElementCategoryFilter fabricFilter = new ElementCategoryFilter(BuiltInCategory.OST_FabricReinforcement);
-                FilteredElementCollector containedEle = new FilteredElementCollector(_doc);
-                containedEle.WherePasses(bbFilter).WherePasses(fabricFilter);
-
-                _reinforcement = ShearWallReinforcement.Unknown;
-                if (containedEle.ToElements().Count == 0) return;
-                _reinforcement = ShearWallReinforcement.SingleCurtain;
-                int fabric_loc = containedEle.FirstElement().get_Parameter(BuiltInParameter.FABRIC_PARAM_LOCATION_WALL).AsInteger();
-                double fabric_offset = containedEle.FirstElement().
-                    get_Parameter(BuiltInParameter.FABRIC_PARAM_COVER_OFFSET).AsDouble();
-                foreach (Element ele in containedEle)
                 {
-                    if (ele.get_Parameter(BuiltInParameter.FABRIC_PARAM_LOCATION_WALL).AsInteger() != fabric_loc
-                        || ele.get_Parameter(BuiltInParameter.FABRIC_PARAM_COVER_OFFSET).AsDouble() != fabric_offset)
+                    ElementCategoryFilter fabricFilter = new ElementCategoryFilter(BuiltInCategory.OST_FabricReinforcement);
+                    FilteredElementCollector containedEle = new FilteredElementCollector(_doc);
+                    containedEle.WherePasses(bbFilter).WherePasses(fabricFilter);
+
+                    if (containedEle.ToElements().Count == 0)
                     {
-                        _reinforcement = ShearWallReinforcement.DoubleCurtain;
-                        break;
+                        _reinforcement = _addiInfo.defaultSet[(byte)DefaultSet.ShearWall_Curtain] == 0 ?
+                            ShearWallReinforcement.SingleCurtain : ShearWallReinforcement.DoubleCurtain;
+                        return;
                     }
-                }
-                #endregion                  //Return Unknown if no fabrics are found
+                    _reinforcement = ShearWallReinforcement.SingleCurtain;
+                    int fabric_loc = containedEle.FirstElement().get_Parameter(BuiltInParameter.FABRIC_PARAM_LOCATION_WALL).AsInteger();
+                    double fabric_offset = containedEle.FirstElement().
+                        get_Parameter(BuiltInParameter.FABRIC_PARAM_COVER_OFFSET).AsDouble();
+                    foreach (Element ele in containedEle)
+                    {
+                        if (ele.get_Parameter(BuiltInParameter.FABRIC_PARAM_LOCATION_WALL).AsInteger() != fabric_loc
+                            || ele.get_Parameter(BuiltInParameter.FABRIC_PARAM_COVER_OFFSET).AsDouble() != fabric_offset)
+                        {
+                            _reinforcement = ShearWallReinforcement.DoubleCurtain;
+                            break;
+                        }
+                    }
+                }   
+                #endregion
             }
             private static bool TryGetFGCode(out string FGcode)
             {
@@ -333,8 +349,6 @@ namespace P58_Loss.ElementProcess
                     _area = _height * _length;
                     _aspectRatio = _length / _height;
                     GetBoundCond_and_Rein(i);
-                    //Default : double curtain
-                    if (_reinforcement == ShearWallReinforcement.Unknown) _reinforcement = ShearWallReinforcement.DoubleCurtain;
                     ++i;
                     if (!TryGetFGCode(out FGCode)) continue;
                     if (_dictionary.TryGetValue(FGCode + _direction.ToString(), out index))
@@ -367,7 +381,6 @@ namespace P58_Loss.ElementProcess
         }
         private enum ShearWallReinforcement : byte
         {
-            Unknown,
             SingleCurtain,
             DoubleCurtain
         }

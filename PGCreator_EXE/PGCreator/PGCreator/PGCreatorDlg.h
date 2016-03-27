@@ -62,8 +62,4 @@ public:
 	afx_msg void OnBnClickedCancel();
 	void static TcharToChar (const TCHAR * tchar, char * _char);
 	void static CharToTchar (const char * _char, TCHAR * tchar);
-	void static GetSetting(char* setting); 
-	static char settingDoc[MAX_SETTING_LENGTH];
-	static bool isSettingChanged;
-	static CString GiveSettingCopy();
 };

@@ -1,6 +1,7 @@
 #pragma once
 
 #define MAX_SETTING_LENGTH 600
+#define NUM_SETTING 11
 
 // CNotepadDlg ¶Ô»°¿ò
 
@@ -23,6 +24,11 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	CEdit* p_ENote;
 	virtual BOOL OnInitDialog();
-	char settingDoc[MAX_SETTING_LENGTH];
+	int setting[NUM_SETTING];
 	afx_msg void OnBnClickedOk();
+	bool IsLegalInput(char file[]);
+	char lastSetting[MAX_SETTING_LENGTH];
+	void OutputInfo(FILE* fp);
+	void ReadExternalSetting();
+	CString m_ENotepad;
 };

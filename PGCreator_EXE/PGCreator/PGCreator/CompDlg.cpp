@@ -6,7 +6,7 @@
 #include "CompDlg.h"
 #include "afxdialogex.h"
 
-CString compName[NUM_COMP] = {L"梁柱节点",L"剪力墙",L"石膏板隔墙",L"玻璃幕墙",L"店面",L"天花板",L"吊顶灯",L"砌体墙",L"墙面装饰"};
+CString compName[NUM_COMP] = {L"梁柱节点",L"剪力墙",L"石膏板隔墙",L"玻璃幕墙",L"店面",L"天花板",L"吊顶灯",L"砌体墙",L"墙面装饰",L"风管"};
 
 // CCompDlg 对话框
 

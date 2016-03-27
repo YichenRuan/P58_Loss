@@ -37,7 +37,7 @@ namespace P58_Loss.ElementProcess
 
             private static bool TryGetFGCode(out string FGCode)
             {
-                FGCode = "B1051.";
+                FGCode = _addiInfo.defaultSet[(byte)DefaultSet.MasonryWall_Grout] == 0 ? "B1051." : "B1052.";
                 if (4.0 * ConstSet.InchToFeet <= _thickness && _thickness <= 6.0 * ConstSet.InchToFeet)
                     FGCode += "00";
                 else if (8.0 * ConstSet.InchToFeet < _thickness && _thickness <= 12.0 * ConstSet.InchToFeet)
@@ -50,16 +50,33 @@ namespace P58_Loss.ElementProcess
                     return false;
                 }
 
-                if (_height <= 1.0)
+                if (_addiInfo.defaultSet[(byte)DefaultSet.MasonryWall_Mechanics] == 0)
                 {
-                    FGCode += "3";
-                    _areaBase = 100.0;
+                    if (_height <= 1.0)
+                    {
+                        FGCode += "1";
+                        _areaBase = 100.0;
+                    }
+                    else
+                    {
+                        FGCode += "2";
+                        _areaBase = 225.0;
+                    }
                 }
                 else
                 {
-                    FGCode += "4";
-                    _areaBase = 225.0;
+                    if (_height <= 1.0)
+                    {
+                        FGCode += "3";
+                        _areaBase = 100.0;
+                    }
+                    else
+                    {
+                        FGCode += "4";
+                        _areaBase = 225.0;
+                    }
                 }
+                
                 return true;
             }
             public static bool Recognization(Wall wall)

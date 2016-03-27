@@ -52,6 +52,7 @@
     <Compile Include="PBeamColumnJoints.cs" />
     <Compile Include="PCeiling.cs" />
     <Compile Include="PCurtainWall.cs" />
+    <Compile Include="PDuct.cs" />
     <Compile Include="PGypWall.cs" />
     <Compile Include="PMasonryWall.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
