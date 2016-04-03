@@ -103,6 +103,7 @@
   <ItemGroup>
     <ClInclude Include="CompDlg.h" />
     <ClInclude Include="DefaultDlg.h" />
+    <ClInclude Include="FireProDlg.h" />
     <ClInclude Include="InfoDlg.h" />
     <ClInclude Include="LevelDlg.h" />
     <ClInclude Include="MateDlg.h" />
@@ -116,6 +117,7 @@
   <ItemGroup>
     <ClCompile Include="CompDlg.cpp" />
     <ClCompile Include="DefaultDlg.cpp" />
+    <ClCompile Include="FireProDlg.cpp" />
     <ClCompile Include="InfoDlg.cpp" />
     <ClCompile Include="LevelDlg.cpp" />
     <ClCompile Include="MateDlg.cpp" />

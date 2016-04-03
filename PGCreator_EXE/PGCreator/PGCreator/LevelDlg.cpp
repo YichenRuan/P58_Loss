@@ -49,6 +49,9 @@ BOOL CLevelDlg::OnInitDialog()
 	p_Llevel->InsertColumn(2,L"标高 (m)", LVCFMT_CENTER,187);
 	p_Llevel->InsertColumn(3,L"上方楼层", LVCFMT_CENTER,188);
 	p_Llevel->DeleteColumn(0);
+
+	p_Llevel->GetHeaderCtrl()->EnableWindow(FALSE);
+
 	return TRUE;
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #define MAX_SETTING_LENGTH 600
-#define NUM_SETTING 11
+#define NUM_SETTING 12
 
 // CNotepadDlg ¶Ô»°¿ò
 

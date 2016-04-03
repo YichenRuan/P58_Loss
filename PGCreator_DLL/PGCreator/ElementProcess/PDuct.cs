@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
 using P58_Loss.GlobalLib;
 
 namespace P58_Loss.ElementProcess
@@ -80,7 +79,6 @@ namespace P58_Loss.ElementProcess
             }
         }
 
-
         private static Document _doc;
         private static AdditionalInfo _addiInfo;
         private static MyLevel _myLevel;
@@ -100,7 +98,7 @@ namespace P58_Loss.ElementProcess
         {
             foreach (MEPCurve duct in _ducts)
             {
-                if (DuctRecognizer.Recognization(duct));
+                if (DuctRecognizer.Recognization(duct))
                     DuctRecognizer.UpdateToPGs();
             }
         }

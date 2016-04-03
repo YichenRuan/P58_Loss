@@ -63,6 +63,8 @@ BOOL CMateDlg::OnInitDialog()
 	p_Lmate->InsertColumn(2,L"Revit²ÄÖÊÀàÐÍ", LVCFMT_CENTER,297);
 	p_Lmate->DeleteColumn(0);
 
+	p_Lmate->GetHeaderCtrl()->EnableWindow(FALSE);
+
 	for (int i=NUM_MATERIAL-1;0<=i;--i)
 	{
 		p_Lmate->InsertItem(0,pgMaterial[i]);

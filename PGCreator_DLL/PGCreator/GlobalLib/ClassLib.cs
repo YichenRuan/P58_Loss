@@ -11,11 +11,12 @@ namespace P58_Loss.GlobalLib
         public static readonly double FeetToMeter = 0.3048;
         public static readonly double AngleTol = 30.0 / 180.0 * Math.PI;
         public static readonly double InchToFeet = 1.0 / 12.0;
+        public static readonly int MAX_BUFF = 10240;
     }
 
     public class PGPath
     {
-        public static readonly string exeDirection = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "PGCreator\\";
+        public static readonly string exeDirectory = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "PGCreator\\";
     }
 
     public class MyLevel
@@ -119,7 +120,7 @@ namespace P58_Loss.GlobalLib
 
     public class ErrorWriter
     {
-        private static string _directory = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "PGCreator";
+        private static string _directory = PGPath.exeDirectory;
         private static string _fileName = @"\ErrorLog.log";
         private static ErrorWriter _errorWriter = null;
         private static string _error = DateTime.Now.ToString() + "\r\n";
@@ -145,12 +146,7 @@ namespace P58_Loss.GlobalLib
         }
         public static void Output()
         {
-            FileStream fs = new FileStream(_directory + _fileName, FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
-            sw.Write(_error);
-            sw.Flush();
-            sw.Close();
-            fs.Close();
+            IOHelper.Output(_error, _fileName, _directory);
         }
     }
 
@@ -186,8 +182,8 @@ namespace P58_Loss.GlobalLib
 
     public class PGWriter
     {
-        private static string _directory = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "PGCreator";
-        private static string _fileName = @"\BuildingPGs";
+        private static string _directory = PGPath.exeDirectory;
+        private static string _fileName = "BuildingPGs";
         private static int _num = 0;
         private static PGWriter _PGWriter = null;
         private static string _PGInfo = "";
@@ -202,7 +198,7 @@ namespace P58_Loss.GlobalLib
             if (_PGWriter == null)
             {
                 _addiInfo = addiInfo;
-                _PGWriter = new PGWriter(_addiInfo.outPath);
+                _PGWriter = new PGWriter(_addiInfo.outPath + "\\");
             }
         }
         public static PGWriter GetWriter()
@@ -241,19 +237,14 @@ namespace P58_Loss.GlobalLib
             head += "\r\n";
             _PGInfo = head + _PGInfo;
             _fileName += "_" + _addiInfo.rvtFileName + ".txt";
-            FileStream fs = new FileStream(_directory + _fileName, FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);       //write in ANSI
-            sw.Write(_PGInfo);
-            sw.Flush();
-            sw.Close();
-            fs.Close();
+            IOHelper.Output(_PGInfo, _fileName, _directory);
         }
     }
 
     public class AbandonmentWriter
     {
-        private static string _directory = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "PGCreator";
-        private static string _fileName = @"\AbandonedElements";
+        private static string _directory = PGPath.exeDirectory;
+        private static string _fileName = "AbandonedElements";
         private static int _num = 0;
         private static AbandonmentWriter _abandonmentWriter = null;
         private static string _abandonment = null;
@@ -268,7 +259,7 @@ namespace P58_Loss.GlobalLib
             if (_abandonmentWriter == null)
             {
                 _addiInfo = addiInfo;
-                _abandonmentWriter = new AbandonmentWriter(_addiInfo.outPath);
+                _abandonmentWriter = new AbandonmentWriter(_addiInfo.outPath + "\\");
             }
         }
         public static AbandonmentWriter GetWriter()
@@ -285,12 +276,7 @@ namespace P58_Loss.GlobalLib
             _fileName += "_" + _addiInfo.rvtFileName + ".txt";
             string head = _addiInfo.bldgName + "\t" + _addiInfo.bldgUse + "\t" + _addiInfo.builtYear + "\r\n";
             _abandonment = head + _abandonment;
-            FileStream fs = new FileStream(_directory + _fileName, FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs);         //ele name may not be transferred correctly if use ANSI
-            sw.Write(_abandonment);
-            sw.Flush();
-            sw.Close();
-            fs.Close();
+            IOHelper.Output(_abandonment, _fileName, _directory);
         }
     }
 
@@ -515,6 +501,36 @@ namespace P58_Loss.GlobalLib
                 }
             }
             //End
+        }
+    }
+
+    public class IOHelper
+    {
+        public static void Output(string content, string fileName, string directory)
+        {
+            try { File.SetAttributes(directory + fileName, FileAttributes.Normal); }
+            catch { }
+            FileStream fs = new FileStream(directory + fileName, FileMode.Create);
+            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);           //Write in ANSI
+            sw.Write(content);
+            sw.Flush();
+            sw.Close();
+            fs.Close();
+        }
+        public static void Output(string content, string fileName)
+        {
+            Output(content, fileName, PGPath.exeDirectory);
+        }
+        public static char[] Input(string fileName)
+        {
+            Stream instream = File.OpenRead(PGPath.exeDirectory + fileName);
+            BufferedStream bfs = new BufferedStream(instream);
+            byte[] buffer = new byte[ConstSet.MAX_BUFF];
+            bfs.Read(buffer, 0, buffer.Length);
+            bfs.Close();
+            instream.Close();
+            File.SetAttributes(PGPath.exeDirectory + fileName, FileAttributes.Hidden);
+            return System.Text.Encoding.Default.GetString(buffer).ToCharArray();
         }
     }
 }

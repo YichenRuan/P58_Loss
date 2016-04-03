@@ -51,6 +51,9 @@
     <ClInclude Include="NotepadDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="FireProDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PGCreator.cpp">
@@ -78,6 +81,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NotepadDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FireProDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

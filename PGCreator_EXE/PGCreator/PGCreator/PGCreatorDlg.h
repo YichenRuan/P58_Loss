@@ -8,8 +8,11 @@
 #include "DefaultDlg.h"
 #include "CompDlg.h"
 #include "MateDlg.h"
+#include "FireProDlg.h"
 
 #define MAX_SETTING_LENGTH 600
+#define BUFF_IN 500
+#define LENGTH_FILENAME 30
 
 // CPGCreatorDlg 对话框
 class CPGCreatorDlg : public CDialogEx
@@ -23,7 +26,6 @@ public:
 
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
-
 
 // 实现
 protected:
@@ -40,21 +42,26 @@ public:
 	CDefaultDlg m_defaultDlg;
 	CCompDlg m_compDlg;
 	CMateDlg m_mateDlg;
+	CFireProDlg m_fpDlg;
 	
 	CTabCtrl m_tab;
 
 	CBrush  m_brush;
-	char inFileName[30];
-	char outFileName[30];
-	char settingFileName[30];
-	char inFile[500];
+	char inFileName[LENGTH_FILENAME];
+	char in2FileName[LENGTH_FILENAME];
+	char outFileName[LENGTH_FILENAME];
+	char out2FileName[LENGTH_FILENAME];
+	char inFile[BUFF_IN];
+	char in2File[BUFF_IN];
 	char inPath[MAX_PATH];
+	char in2Path[MAX_PATH];
 	char outPath[MAX_PATH];
-	char settingPath[MAX_PATH];
+	char out2Path[MAX_PATH];
 
 	afx_msg void OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	void ReadInFile();
+	bool ReadInFile();
+	bool ReadIn2File();
 	void UseInFile();
 	afx_msg void OnBnClickedOk();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);

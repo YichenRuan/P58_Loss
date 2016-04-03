@@ -146,7 +146,7 @@ void CNotepadDlg::ReadExternalSetting()
 	}
 	if(fp_setting == NULL || !isLegal)
 	{
-		char* settingTemplate = "//Default Value Setting\r\n//Please read the help file for more information\r\n//---Shear Wall---B1044\r\n0;\r\n0;\r\n//---Gypsum Wall---C1011\r\n0;\r\n0;\r\n//---Ceiling---C3032\r\n0;\r\n0;\r\n//---Ceiling Lighting---C3033-C3034\r\n0;\r\n0;\r\n//---Masonry Wall---B105\r\n0;\r\n0;\r\n//---Duct---D3041\r\n0;\r\n//End";
+		char* settingTemplate = "//Default Value Setting\r\n//Please read the help file for more information\r\n//---Shear Wall---B1044\r\n0;\r\n0;\r\n//---Gypsum Wall---C1011\r\n0;\r\n0;\r\n//---Ceiling---C3032\r\n0;\r\n0;\r\n//---Ceiling Lighting---C3033-C3034\r\n0;\r\n0;\r\n//---Masonry Wall---B105\r\n0;\r\n0;\r\n//---Duct---D3041\r\n0;\r\n//---Pipe---D2061\r\n0;\r\n//End";
 		strcpy_s(lastSetting,settingTemplate);
 		for (int i=0;i<NUM_SETTING;++i)
 		{

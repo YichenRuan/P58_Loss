@@ -4,19 +4,18 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB.Structure;
-using Autodesk.Revit.UI.Selection;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using P58_Loss.GlobalLib;
 using P58_Loss.ElementProcess;
+using P58_Loss.FireProtection;
 
 namespace P58_Loss
 {
     [Autodesk.Revit.Attributes.Transaction(Autodesk.Revit.Attributes.TransactionMode.Manual)]
     class PGCreator : IExternalCommand
     {
-        private static readonly int MAX_BUFF = 10240;           //10 KB
         private bool normalExit = false;
         
         private void DoOutput(Document doc)
@@ -35,32 +34,14 @@ namespace P58_Loss
             inFile += title + "\t"
                    + bldgName + "\t\r\n";
             MyLevel.WriteLevelsToInFile(ref inFile);
-            try { File.SetAttributes(PGPath.exeDirection + "PGCTF.IN", FileAttributes.Normal); }
-            catch { }
-
-            FileStream fs = new FileStream(PGPath.exeDirection + "PGCTF.IN", FileMode.Create);
-            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);           //Write in ANSI
-            sw.Write(inFile);
-            sw.Flush();
-            sw.Close();
-            fs.Close();
+            IOHelper.Output(inFile, "PGCTF.IN");
         }
-        private char[] DoInput(string fileName)
-        {
-            Stream instream = File.OpenRead(PGPath.exeDirection + fileName);
-            BufferedStream bfs = new BufferedStream(instream);
-            byte[] buffer = new byte[MAX_BUFF];
-            bfs.Read(buffer, 0, buffer.Length);
-            bfs.Close();
-            instream.Close();
-            File.SetAttributes(PGPath.exeDirection + fileName, FileAttributes.Hidden);
-            return System.Text.Encoding.Default.GetString(buffer).ToCharArray();
-        }   
             
         public Result Execute(ExternalCommandData revit, ref string message, ElementSet elements)
         {
             ErrorWriter.SetWriter();
             ErrorWriter errorWriter = ErrorWriter.GetWriter();
+            //FireProtectionColl fireProColl = new FireProtectionColl();
             try
             {
                 //Get Doc
@@ -73,9 +54,10 @@ namespace P58_Loss
                 MyLevel.SetMyLevel(LevelCollector);
                 //IO
                 DoOutput(doc);
-                Process process = Process.Start(PGPath.exeDirection + "PGCreator.exe");
+                //fireProColl.OutputIN2(doc);
+                Process process = Process.Start(PGPath.exeDirectory + "PGCreator.exe");
                 process.WaitForExit();
-                char[] outFile = DoInput("PGCTF.OUT");
+                char[] outFile = IOHelper.Input("PGCTF.OUT");
                 //Process
                 if (outFile[0] == '0')
                 {
@@ -94,20 +76,17 @@ namespace P58_Loss
                     if (addiInfo.requiredComp[(byte)PGComponents.Ceiling]
                      || addiInfo.requiredComp[(byte)PGComponents.CeilingLighting])  pgWriter.UpdatePGs(PCeiling.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.MasonryWall])      pgWriter.UpdatePGs(PMasonryWall.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Duct])             pgWriter.UpdatePGs(PDuct.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Pipe])             pgWriter.UpdatePGs(PPipe.GetPG(doc, addiInfo));
                     normalExit = true;
-                    if (addiInfo.requiredComp[(byte)PGComponents.Duct]) pgWriter.UpdatePGs(PDuct.GetPG(doc, addiInfo));
                 }
- 
+
                 //Test
-                FilteredElementCollector coll = new FilteredElementCollector(doc);
-                ElementClassFilter filter = new ElementClassFilter(typeof(FamilySymbol));
-                coll.WherePasses(filter);
-                foreach (FamilySymbol fi in coll)
-                {
-                    errorWriter.WriteError(fi.FamilyName + "\r\n");
-                }
+                //fireProColl.InputOUT2();
+                //fireProColl.OutputFP();
 
 
+                
             }
             catch (Exception e)
             {

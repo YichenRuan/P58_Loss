@@ -23,7 +23,8 @@
         CeilingLighting,
         MasonryWall,
         WallFinish,
-        Duct
+        Duct,
+        Pipe
     }
 
     public enum PGMaterialType : byte
@@ -51,7 +52,8 @@
         Lighting_SeisRated,
         MasonryWall_Grout,
         MasonryWall_Mechanics,
-        Duct_Material
+        Duct_Material,
+        Pipe_FragilityType
     }
 
     public enum Direction : byte
@@ -89,7 +91,11 @@
         CeilingSDCConflictIp,
         MasonryWallThicknessOOR,            //B1015
         TooManyFinishes,
-        DuctLevelError                      //D3041
+        DuctLevelError,                     //D3041
+        PipeLevelError,
+        PipeNonCircular,
+        PipeDiameterTooSmall,
+        PipeSDCNotOOR
     }
 
     public enum MomentFrameType : byte
