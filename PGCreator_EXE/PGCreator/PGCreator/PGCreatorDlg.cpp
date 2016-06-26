@@ -16,21 +16,25 @@
 
 // CPGCreatorDlg 对话框
 
-bool isFireProOpen = true;
+bool isFireProOpen = false;
+
+CString CPGCreatorDlg::ccl = L"";
 
 CPGCreatorDlg::CPGCreatorDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CPGCreatorDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_brush.CreateSolidBrush(RGB(200,200,200));
-	char* temp_inName = "\\PGCreator\\PGCTF.IN";
-	char* temp_in2Name = "\\PGCreator\\FPTF.IN2";
-	char* temp_outName = "\\PGCreator\\PGCTF.OUT";
-	char* temp_out2Name = "\\PGCreator\\FPTF.OUT2";
+	char* temp_inName = "PGCTF.IN";
+	char* temp_in2Name = "FPTF.IN2";
+	char* temp_outName = "PGCTF.OUT";
+	char* temp_out2Name = "FPTF.OUT2";
+	char* temp_binName = "MEPTF.dat";
 	strcpy_s(inFileName,temp_inName);
 	strcpy_s(in2FileName,temp_in2Name);
 	strcpy_s(outFileName,temp_outName);
 	strcpy_s(out2FileName,temp_out2Name);
+	strcpy_s(binFileName,temp_binName);
 }
 
 void CPGCreatorDlg::DoDataExchange(CDataExchange* pDX)
@@ -64,13 +68,42 @@ BOOL CPGCreatorDlg::OnInitDialog()
 	// TODO: 在此添加额外的初始化代码
 	//USES_CONVERSION;
 	//AfxMessageBox(A2T(GetProgramDir()));
-	_getcwd(inPath,MAX_PATH);
-	_getcwd(in2Path,MAX_PATH);
-	_getcwd(outPath,MAX_PATH);
-	_getcwd(out2Path,MAX_PATH);
+	int nArgs = 0;
+	LPWSTR *szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+
+	if (nArgs <= 1)
+	{
+		AfxMessageBox(L"无法启动PGCreator");
+		EndDialog(IDCANCEL);
+		return TRUE;
+	}
+
+	CString cs(szArglist[1]);
+	for (int i = 2; i < nArgs; ++i)
+	{
+		CString temp(szArglist[i]);
+		cs += L" " + temp;
+	}
+	
+	commandLine = nullptr;
+	USES_CONVERSION;
+	commandLine = T2A(cs);
+	ccl = cs;
+
+	if (commandLine == nullptr || commandLine[0] == '\0')
+	{
+		AfxMessageBox(L"无法启动PGCreator");
+		EndDialog(IDCANCEL);
+		return TRUE;
+	}
+	strcpy_s(inPath, commandLine);
+	strcpy_s(in2Path, commandLine);
+	strcpy_s(outPath, commandLine);
+	strcpy_s(out2Path, commandLine);
+	strcpy_s(binPath, commandLine);
 	if (!ReadInFile())
 	{
-		AfxMessageBox(L"无法启动PGCreator，请通过Revit进入程序.");
+		AfxMessageBox(L"无法启动PGCreator");
 		EndDialog(IDCANCEL);
 	}
 	else
@@ -80,12 +113,14 @@ BOOL CPGCreatorDlg::OnInitDialog()
 		m_tab.InsertItem(2,L"默认值设置");
 		m_tab.InsertItem(3,L"构件设置");
 		m_tab.InsertItem(4,L"材质映射");
+		m_tab.InsertItem(5,L"MEP助手");
 
 		m_infoDlg.Create(IDD_INFO_DIALOG,GetDlgItem(IDC_TAB));
 		m_levelDlg.Create(IDD_LEVEL_DIALOG,GetDlgItem(IDC_TAB));
 		m_defaultDlg.Create(IDD_DEFAULT_DIALOG,GetDlgItem(IDC_TAB));
 		m_compDlg.Create(IDD_COMP_DIALOG,GetDlgItem(IDC_TAB));
 		m_mateDlg.Create(IDD_MATERIAL_DIALOG,GetDlgItem(IDC_TAB));
+		m_mepDlg.Create(IDD_MEP_DIALOG,GetDlgItem(IDC_TAB));
 
 		CRect rs;
 		m_tab.GetClientRect(&rs);
@@ -96,11 +131,15 @@ BOOL CPGCreatorDlg::OnInitDialog()
 		m_compDlg.MoveWindow(&rs);
 		m_mateDlg.MoveWindow(&rs);
 
+
+		
+		m_mepDlg.MoveWindow(&rs);
+
 		if (isFireProOpen)
 		{
 			if (ReadIn2File())
 			{
-				m_tab.InsertItem(5,L"消防设备");
+				m_tab.InsertItem(6,L"消防设备");
 				m_fpDlg.Create(IDD_FIREPRO_DIALOG,GetDlgItem(IDC_TAB));
 				m_fpDlg.MoveWindow(&rs);
 				m_fpDlg.In2FileInterpret(in2File);
@@ -168,6 +207,7 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(FALSE);
 		m_mateDlg.ShowWindow(FALSE);
+		m_mepDlg.ShowWindow(FALSE);
 		break;
 	case 1:
 		m_infoDlg.ShowWindow(FALSE);
@@ -175,6 +215,7 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(FALSE);
 		m_mateDlg.ShowWindow(FALSE);
+		m_mepDlg.ShowWindow(FALSE);
 		break;
 	case 2:
 		m_infoDlg.ShowWindow(FALSE);
@@ -182,6 +223,7 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_defaultDlg.ShowWindow(TRUE);
 		m_compDlg.ShowWindow(FALSE);
 		m_mateDlg.ShowWindow(FALSE);
+		m_mepDlg.ShowWindow(FALSE);
 		break;
 	case 3:
 		m_infoDlg.ShowWindow(FALSE);
@@ -189,6 +231,7 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(TRUE);
 		m_mateDlg.ShowWindow(FALSE);
+		m_mepDlg.ShowWindow(FALSE);
 		break;
 	case 4:
 		m_infoDlg.ShowWindow(FALSE);
@@ -196,6 +239,7 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(FALSE);
 		m_mateDlg.ShowWindow(TRUE);
+		m_mepDlg.ShowWindow(FALSE);
 		break;
 	case 5:
 		m_infoDlg.ShowWindow(FALSE);
@@ -203,6 +247,15 @@ void CPGCreatorDlg::OnSelchangeTab(NMHDR *pNMHDR, LRESULT *pResult)
 		m_defaultDlg.ShowWindow(FALSE);
 		m_compDlg.ShowWindow(FALSE);
 		m_mateDlg.ShowWindow(FALSE);
+		m_mepDlg.ShowWindow(TRUE);
+		break;
+	case 6:
+		m_infoDlg.ShowWindow(FALSE);
+		m_levelDlg.ShowWindow(FALSE);
+		m_defaultDlg.ShowWindow(FALSE);
+		m_compDlg.ShowWindow(FALSE);
+		m_mateDlg.ShowWindow(FALSE);
+		m_mepDlg.ShowWindow(FALSE);
 		m_fpDlg.ShowWindow(TRUE);
 		break;
 	default:
@@ -286,6 +339,7 @@ void CPGCreatorDlg::UseInFile()
 	
 	m_infoDlg.InFileInterpret(inFile,infoQueue);
 	m_levelDlg.InFileInterpret(inFile,levelQueue);
+	m_mepDlg.InFileInterpret(inFile, ++i);
 }
 
 void CPGCreatorDlg::OnBnClickedOk()
@@ -296,6 +350,7 @@ void CPGCreatorDlg::OnBnClickedOk()
 	SetFileAttributes((CString)outPath,FILE_ATTRIBUTE_NORMAL);
 	fopen_s(&fp,outPath,"w+");
 	fprintf_s(fp,"0\n%s\n",m_infoDlg.GetFilePath());
+
 	m_infoDlg.OutputInfo(fp);
 	m_levelDlg.OutputInfo(fp);
 	m_defaultDlg.OutputInfo(fp);
@@ -303,6 +358,13 @@ void CPGCreatorDlg::OnBnClickedOk()
 	m_mateDlg.OutputInfo(fp);
 	m_defaultDlg.OutputSetting(fp);
 	fclose(fp);
+
+	FILE* fp_b;
+	strcat_s(binPath,binFileName);
+	SetFileAttributes((CString)binPath,FILE_ATTRIBUTE_NORMAL);
+	fopen_s(&fp_b,binPath,"wb");
+	m_mepDlg.OutputInfo(fp_b);
+	fclose(fp_b);
 
 	if (isFireProOpen)
 	{
@@ -363,3 +425,8 @@ void CPGCreatorDlg::CharToTchar (const char * _char, TCHAR * tchar)
 	iLength = MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, NULL, 0) ;  
 	MultiByteToWideChar (CP_ACP, 0, _char, strlen (_char) + 1, tchar, iLength) ;  
 } 
+
+CString CPGCreatorDlg::GetMyCommandLine()
+{
+	return ccl;
+}

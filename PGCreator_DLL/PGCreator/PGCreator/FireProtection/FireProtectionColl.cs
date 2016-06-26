@@ -17,7 +17,7 @@ namespace P58_Loss.FireProtection
                 return x.Definition.Name.CompareTo(y.Definition.Name);
             }
         }
-        
+
         private class FamilyNode
         {
             public string familyName;
@@ -37,12 +37,12 @@ namespace P58_Loss.FireProtection
             {
                 string report = "序号\t族类别";
                 {
-                    List<Parameter> paraList = new List<Parameter>(_num_paras);               
+                    List<Parameter> paraList = new List<Parameter>(_num_paras);
                     ParameterSet paras1 = _fis.First().Parameters;
                     ParameterSet paras2 = _fis.First().Symbol.Parameters;
                     foreach (Parameter para in paras1)
                     {
-                        paraList.Add(para);  
+                        paraList.Add(para);
                     }
                     foreach (Parameter para in paras2)
                     {
@@ -55,7 +55,7 @@ namespace P58_Loss.FireProtection
                     }
                     report += "\r\n";
                 }
-                
+
                 int count = 1;
                 foreach(FamilyInstance fi in _fis)
                 {
@@ -146,7 +146,7 @@ namespace P58_Loss.FireProtection
                             report += (count_cate + 1).ToString() + "." + count_fami++.ToString() + " " + fn.familyName + "\r\n";
                             report += fn.ReportFamily();
                         }
-                    }  
+                    }
                 }
                 return report;
             }
@@ -158,7 +158,7 @@ namespace P58_Loss.FireProtection
         private static int _num_paras = 30;
         private static int _emptyCates = 0;
         private char[] _out2;
-        
+
         private string OutputSoft(Document doc)
         {
             List<FilteredElementCollector> collectors = new List<FilteredElementCollector>(_num_cates);
@@ -171,6 +171,7 @@ namespace P58_Loss.FireProtection
             filters.Add(new ElementCategoryFilter(BuiltInCategory.OST_FireAlarmDevices));
             filters.Add(new ElementCategoryFilter(BuiltInCategory.OST_ElectricalEquipment));
             filters.Add(new ElementCategoryFilter(BuiltInCategory.OST_CableTray));
+            //add more categories here
             for (int i = 0; i < _num_cates; ++i)
             {
                 collectors[i].WherePasses(filters[i]).WherePasses(familyInstanceFilter);
@@ -188,7 +189,7 @@ namespace P58_Loss.FireProtection
                     ++_emptyCates;
                 }
             }
-            return (_num_cates - _emptyCates).ToString() + "\r\n" + FPMana.GetSoftReport();   
+            return (_num_cates - _emptyCates).ToString() + "\r\n" + FPMana.GetSoftReport();
         }
         private List<List<int>> InterpretOUT2()
         {

@@ -29,4 +29,8 @@ public:
 	void OutputSetting(FILE* fp);
 	CNotepadDlg m_notepadDlg;
 	afx_msg void OnClickedButtonNotepad();
+	double m_EangleTol;
+	double m_EfloorTol;
+	afx_msg void OnKillfocusEditAngletol();
+	afx_msg void OnKillfocusEditFloortol();
 };

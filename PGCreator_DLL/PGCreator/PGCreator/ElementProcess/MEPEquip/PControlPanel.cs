@@ -1,0 +1,67 @@
+﻿using System.Linq;
+using Autodesk.Revit.DB;
+using System.Collections.Generic;
+using P58_Loss.GlobalLib;
+
+namespace P58_Loss.ElementProcess
+{
+    public sealed class PControlPanel : AMEPEquip
+    {
+        public sealed class ControlPanelRecognizer : AMEPRecognizer
+        {
+            public ControlPanelRecognizer(int dicSize = 1) : base(dicSize) { }
+            public override bool Recognization(FamilyInstance fi)
+            {
+                _fi = fi;
+                if (TryGetFIFloor(_doc)) return true;
+                else return false;
+            }
+            public override void UpdateToPGs()
+            {
+                int installValue = _addiInfo.defaultSet[(byte)DefaultSet.ControlPanel_Install];
+                int dmValue = _addiInfo.defaultSet[(byte)DefaultSet.ControlPanel_DamageMode];
+                if (installValue == 0)
+                {
+                    if (dmValue != 1)
+                    {
+                        _abandonWriter.WriteAbandonment(_fi, AbandonmentTable.ControlPanel_InsDMConflict);
+                        return;
+                    }
+                    else
+                    {
+                        --installValue;
+                        dmValue = 0;
+                    }
+                }
+                string FGCode = "D3067.01" + (installValue + 2).ToString() + ConstSet.Alphabet[dmValue];
+
+                int index;
+                if (_dictionary.TryGetValue(FGCode, out index))
+                {
+                    _PGItems.ElementAt(index).Num[_floor] += 1.0;
+                }
+                else
+                {
+                    PGItem pgItem = new PGItem();
+                    pgItem.PGName = "控制面板";
+                    pgItem.PinYinSuffix = "KongZhiMianBan";
+                    pgItem.Code = FGCode;
+                    pgItem.direction = Direction.Undefined;
+                    pgItem.Num[_floor] += 1.0;
+                    pgItem.Price = _addiInfo.prices[(byte)PGComponents.ControlPanel];
+                    if (pgItem.Price == 0.0) pgItem.IfDefinePrice = false;
+                    else pgItem.IfDefinePrice = true;
+                    _PGItems.Add(pgItem);
+                    _dictionary.Add(FGCode, _PGItems.Count - 1);
+                }
+            }
+        }
+        public PControlPanel(Document doc, AdditionalInfo addiInfo) : base(doc, addiInfo)
+        {
+            _PGItems = new List<PGItem>(1);
+            _equips = new List<FamilyInstance>(100);
+            _mepComp = MEPComponents.ControlPanel;
+            _mepRecog = new ControlPanelRecognizer();
+        }
+    }
+}

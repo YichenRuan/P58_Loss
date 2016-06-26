@@ -6,7 +6,10 @@
 #include "CompDlg.h"
 #include "afxdialogex.h"
 
-CString compName[NUM_COMP] = {L"梁柱节点",L"剪力墙",L"石膏板隔墙",L"玻璃幕墙",L"店面",L"天花板",L"吊顶灯",L"砌体墙",L"墙面装饰",L"风管",L"蒸汽水管"};
+CString compName[NUM_COMP] = {L"钢支撑刚架",L"钢结构梁柱节点",L"混凝土梁柱节点",L"混凝土连梁",L"混凝土剪力墙",L"无梁楼盖",
+			L"砌体墙",L"玻璃幕墙",L"店面",L"屋顶",L"石膏板隔墙",L"楼梯",L"墙面装饰",L"天花板",L"吊顶灯",
+			L"水管",L"冷却器", L"冷却塔",L"压缩器", L"管道风机",L"风管",L"变风箱", L"普通风机",L"散流器", L"空气处理单元", 
+			L"控制面板", L"消防喷淋", L"变压器", L"电机控制中心", L"低压开关", L"配电板",L"电池架", L"充电器", L"柴油发电机"};
 
 // CCompDlg 对话框
 
@@ -34,6 +37,11 @@ BEGIN_MESSAGE_MAP(CCompDlg, CDialog)
 	ON_NOTIFY(NM_CLICK, IDC_LIST_COMP, &CCompDlg::OnClickListComp)
 	ON_EN_KILLFOCUS(IDC_EDIT_PRICE, &CCompDlg::OnKillfocusEditPrice)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST_COMP, &CCompDlg::OnItemchangedListComp)
+	ON_BN_CLICKED(IDC_BUTTON_UNCHECKALL, &CCompDlg::OnClickedButtonUncheckall)
+	ON_BN_CLICKED(IDC_BUTTON_CHECKALL, &CCompDlg::OnClickedButtonCheckall)
+	ON_BN_CLICKED(IDC_BUTTON_MEPCOMBO, &CCompDlg::OnClickedButtonMepcombo)
+	ON_BN_CLICKED(IDC_BUTTON_ARCHCOMBO, &CCompDlg::OnClickedButtonArchcombo)
+	ON_BN_CLICKED(IDC_BUTTON_STRUCOMBO, &CCompDlg::OnClickedButtonStrucombo)
 END_MESSAGE_MAP()
 
 
@@ -178,4 +186,74 @@ void CCompDlg::OutputInfo(FILE* fp)
 		}
 	}
 	fprintf_s(fp,"\n");
+}
+
+void CCompDlg::OnClickedButtonUncheckall()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CListCtrl* p_Lcomp = (CListCtrl*)GetDlgItem(IDC_LIST_COMP);
+	for (int i = NUM_COMP - 1; 0 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i,FALSE);
+	}
+}
+
+
+void CCompDlg::OnClickedButtonCheckall()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CListCtrl* p_Lcomp = (CListCtrl*)GetDlgItem(IDC_LIST_COMP);
+	for (int i = NUM_COMP - 1; 0 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i,TRUE);
+	}
+}
+
+
+void CCompDlg::OnClickedButtonMepcombo()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CListCtrl* p_Lcomp = (CListCtrl*)GetDlgItem(IDC_LIST_COMP);
+	for (int i = NUM_COMP - 1; 15 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i,TRUE);
+	}
+	for (int i = 14; 0 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i,FALSE);
+	}
+}
+
+
+void CCompDlg::OnClickedButtonArchcombo()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CListCtrl* p_Lcomp = (CListCtrl*)GetDlgItem(IDC_LIST_COMP);
+	for (int i = NUM_COMP - 1; 15 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i, FALSE);
+	}
+	for (int i = 14; 6 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i, TRUE);
+	}
+	for (int i = 5; 0 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i, FALSE);
+	}
+}
+
+
+void CCompDlg::OnClickedButtonStrucombo()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	CListCtrl* p_Lcomp = (CListCtrl*)GetDlgItem(IDC_LIST_COMP);
+	for (int i = NUM_COMP - 1; 6 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i, FALSE);
+	}
+	for (int i = 5; 0 <= i; --i)
+	{
+		p_Lcomp->SetCheck(i, TRUE);
+	}
 }

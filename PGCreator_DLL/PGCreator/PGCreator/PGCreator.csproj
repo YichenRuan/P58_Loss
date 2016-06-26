@@ -30,12 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ElementProcess">
-      <HintPath>..\ElementProcess\bin\Debug\ElementProcess.dll</HintPath>
-    </Reference>
-    <Reference Include="GlobalLib">
-      <HintPath>..\GlobalLib\bin\Debug\GlobalLib.dll</HintPath>
-    </Reference>
     <Reference Include="RevitAPI">
       <HintPath>D:\Revit 2016\RevitAPI.dll</HintPath>
     </Reference>
@@ -52,10 +46,46 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FireProtection\FireProtectionColl.cs" />
+    <Compile Include="ElementProcess\MEPEquip\AMEPEquip.cs" />
+    <Compile Include="ElementProcess\MEPEquip\AMEPRecognizer.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PAHU.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PBatteryCharger.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PBatteryRack.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PChiller.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PCompressor.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PControlPanel.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PCoolingTower.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PDieselGen.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PDiffuser.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PDistPanel.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PFireSprinkler.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PHVACFan.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PHVACFan_InLine.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PLVS.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PMCC.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PTransformer.cs" />
+    <Compile Include="ElementProcess\MEPEquip\PVAV.cs" />
+    <Compile Include="ElementProcess\PBeamColumnJoints.cs" />
+    <Compile Include="ElementProcess\PBracedFrame.cs" />
+    <Compile Include="ElementProcess\PCeiling.cs" />
+    <Compile Include="ElementProcess\PCurtainWall.cs" />
+    <Compile Include="ElementProcess\PDuct.cs" />
+    <Compile Include="ElementProcess\PFlatSlab.cs" />
+    <Compile Include="ElementProcess\PGypWall.cs" />
+    <Compile Include="ElementProcess\PLinkBeam.cs" />
+    <Compile Include="ElementProcess\PMasonryWall.cs" />
+    <Compile Include="ElementProcess\PPipe.cs" />
+    <Compile Include="ElementProcess\PRoof.cs" />
+    <Compile Include="ElementProcess\PShearWall.cs" />
+    <Compile Include="ElementProcess\PStair.cs" />
+    <Compile Include="ElementProcess\PSteelBCJoints.cs" />
+    <Compile Include="ElementProcess\PStorefront.cs" />
+    <Compile Include="GlobalLib\ClassLib.cs" />
+    <Compile Include="GlobalLib\EnumLib.cs" />
     <Compile Include="PGCreator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

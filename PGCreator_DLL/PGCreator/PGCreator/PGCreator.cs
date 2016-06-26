@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Threading;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.DB.Structure;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using P58_Loss.GlobalLib;
 using P58_Loss.ElementProcess;
-using P58_Loss.FireProtection;
 
 namespace P58_Loss
 {
@@ -34,6 +28,7 @@ namespace P58_Loss
             inFile += title + "\t"
                    + bldgName + "\t\r\n";
             MyLevel.WriteLevelsToInFile(ref inFile);
+            MEPHelper.WriteMEPToInFile(doc, ref inFile);
             IOHelper.Output(inFile, "PGCTF.IN");
         }
             
@@ -55,12 +50,15 @@ namespace P58_Loss
                 //IO
                 DoOutput(doc);
                 //fireProColl.OutputIN2(doc);
-                Process process = Process.Start(PGPath.exeDirectory + "PGCreator.exe");
+                Process process = Process.Start(PGPath.exeDirectory + "PGCreator.exe", PGPath.exeDirectory);
                 process.WaitForExit();
                 char[] outFile = IOHelper.Input("PGCTF.OUT");
+                IOHelper.Output("1", "PGCTF.OUT");
+                IOHelper.TryHideFile("PGCTF.OUT");
                 //Process
                 if (outFile[0] == '0')
                 {
+                    MEPHelper.ReadBinFile();
                     AdditionalInfo addiInfo = new AdditionalInfo(outFile);
                     MyLevel.AdjustLevels(addiInfo);
                     PGWriter.SetWriter(addiInfo);
@@ -76,17 +74,35 @@ namespace P58_Loss
                     if (addiInfo.requiredComp[(byte)PGComponents.Ceiling]
                      || addiInfo.requiredComp[(byte)PGComponents.CeilingLighting])  pgWriter.UpdatePGs(PCeiling.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.MasonryWall])      pgWriter.UpdatePGs(PMasonryWall.GetPG(doc, addiInfo));
+
                     if (addiInfo.requiredComp[(byte)PGComponents.Duct])             pgWriter.UpdatePGs(PDuct.GetPG(doc, addiInfo));
                     if (addiInfo.requiredComp[(byte)PGComponents.Pipe])             pgWriter.UpdatePGs(PPipe.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Chiller])          pgWriter.UpdatePGs((new PChiller(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.CoolingTower])     pgWriter.UpdatePGs((new PCoolingTower(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.Compressor])       pgWriter.UpdatePGs((new PCompressor(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.HVACFan_InLine])   pgWriter.UpdatePGs((new PHVACFan_InLine(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.Diffuser])         pgWriter.UpdatePGs((new PDiffuser(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.VAV])              pgWriter.UpdatePGs((new PVAV(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.HVACFan])          pgWriter.UpdatePGs((new PHVACFan(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.AHU])              pgWriter.UpdatePGs((new PAHU(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.ControlPanel])     pgWriter.UpdatePGs((new PControlPanel(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.FireSprinkler])    pgWriter.UpdatePGs((new PFireSprinkler(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.Transformer])      pgWriter.UpdatePGs((new PTransformer(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.MCC])              pgWriter.UpdatePGs((new PMCC(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.LVS])              pgWriter.UpdatePGs((new PLVS(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.DistPanel])        pgWriter.UpdatePGs((new PDistPanel(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.BatteryRack])      pgWriter.UpdatePGs((new PBatteryRack(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.BatteryCharger])   pgWriter.UpdatePGs((new PBatteryCharger(doc, addiInfo)).GetPG());
+                    if (addiInfo.requiredComp[(byte)PGComponents.DieselGen])        pgWriter.UpdatePGs((new PDieselGen(doc, addiInfo)).GetPG());
+
+                    if (addiInfo.requiredComp[(byte)PGComponents.BracedFrame])      pgWriter.UpdatePGs(PBracedFrame.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.SteelBCJoint])     pgWriter.UpdatePGs(PStealBCJoints.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.FlatSlab])         pgWriter.UpdatePGs(PFlatSlab.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.LinkBeam])         pgWriter.UpdatePGs(PLinkBeam.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Stair])            pgWriter.UpdatePGs(PStair.GetPG(doc, addiInfo));
+                    if (addiInfo.requiredComp[(byte)PGComponents.Roof])             pgWriter.UpdatePGs(PRoof.GetPG(doc, addiInfo));
                     normalExit = true;
                 }
-
-                //Test
-                //fireProColl.InputOUT2();
-                //fireProColl.OutputFP();
-
-
-                
             }
             catch (Exception e)
             {

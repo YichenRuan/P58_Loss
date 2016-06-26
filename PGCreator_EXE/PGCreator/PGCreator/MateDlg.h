@@ -1,7 +1,7 @@
 #pragma once
 
-#define NUM_MATERIAL 9
-#define  MAX_MATERIAL_LENGTH 10
+#define NUM_MATERIAL 17
+#define  MAX_MATERIAL_LENGTH 50
 
 // CMateDlg ¶Ô»°¿ò
 

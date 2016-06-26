@@ -101,12 +101,14 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddMEPDlg.h" />
     <ClInclude Include="CompDlg.h" />
     <ClInclude Include="DefaultDlg.h" />
     <ClInclude Include="FireProDlg.h" />
     <ClInclude Include="InfoDlg.h" />
     <ClInclude Include="LevelDlg.h" />
     <ClInclude Include="MateDlg.h" />
+    <ClInclude Include="MEPDlg.h" />
     <ClInclude Include="NotepadDlg.h" />
     <ClInclude Include="PGCreator.h" />
     <ClInclude Include="PGCreatorDlg.h" />
@@ -115,12 +117,14 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AddMEPDlg.cpp" />
     <ClCompile Include="CompDlg.cpp" />
     <ClCompile Include="DefaultDlg.cpp" />
     <ClCompile Include="FireProDlg.cpp" />
     <ClCompile Include="InfoDlg.cpp" />
     <ClCompile Include="LevelDlg.cpp" />
     <ClCompile Include="MateDlg.cpp" />
+    <ClCompile Include="MEPDlg.cpp" />
     <ClCompile Include="NotepadDlg.cpp" />
     <ClCompile Include="PGCreator.cpp" />
     <ClCompile Include="PGCreatorDlg.cpp" />

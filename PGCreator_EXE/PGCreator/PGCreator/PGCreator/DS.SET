@@ -1,9 +1,30 @@
 //Default Value Setting
 //Please read the help file for more information
+//---Braced Frame---B1031
+0;
+0;
+0;
+0;
+//---Steel Joints---B1035
+0;
+//---Link Beam---B1042
+0;
 //---Shear Wall---B1044
 0;
 0;
+//---Flat Slab---B1049
+0;
+0;
+0;
+//---Masonry Wall---B105
+0;
+0;
+//---Roof---B3011
+0;
 //---Gypsum Wall---C1011
+0;
+0;
+//---Stair---C2011
 0;
 0;
 //---Ceiling---C3032
@@ -12,11 +33,63 @@
 //---Ceiling Lighting---C3033-C3034
 0;
 0;
-//---Masonry Wall---B105
+//---Pipe---D2021, D2022, D2031, D2051, D2061, D4011
 0;
+//---Chiller---D3031
+0;
+0;
+0;
+//---Cooling Tower---D3031
+0;
+0;
+0;
+//---Compressor---D3032
+0;
+0;
+0;
+//---HVAC Fan in Line Fan---D3041.00
 0;
 //---Duct---D3041
 0;
-//---Pipe---D2061
+//---HVAC Fan---D3041
 0;
-//End#
+0;
+//---Diffusser---D3041
+0;
+//---Air Handling Unit---D3052
+0;
+0;
+0;
+//---Control Panel---D3067
+0;
+0;
+//---Fire Sprinkler---D4011
+0;
+0;
+//---Transformer---D5011
+0;
+0;
+0;
+//---Motor Control Center---D5012.01
+0;
+0;
+//---Low Voltage Switchgear---D5012.02
+0;
+0;
+0;
+//---Distribution Panel---D5012.03
+0;
+0;
+0;
+//---Battery Rack---D5092.01
+0;
+0;
+//---Battery Charger---D5092.02
+0;
+0;
+//---Diesel Generator---D5092.03
+0;
+0;
+0;
+//End
+#

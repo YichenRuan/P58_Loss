@@ -1,19 +1,6 @@
 #pragma once
 //#include "MyListCtrl.h"
-#define NUM_COMP 11
-/*
-	0: 梁柱节点
-	1: 剪力墙
-	2: 石膏板隔墙
-	3: 玻璃幕墙
-	4: 店面
-	5: 天花板
-	6: 吊顶灯
-	7: 砌体墙
-	8: 墙面装饰
-	9: 风管
-	10: 蒸汽水管
-*/
+#define NUM_COMP 34
 
 // CCompDlg 对话框
 
@@ -42,4 +29,9 @@ public:
 	double d_Eprice;
 	afx_msg void OnItemchangedListComp(NMHDR *pNMHDR, LRESULT *pResult);
 	void OutputInfo(FILE* fp);
+	afx_msg void OnClickedButtonUncheckall();
+	afx_msg void OnClickedButtonCheckall();
+	afx_msg void OnClickedButtonMepcombo();
+	afx_msg void OnClickedButtonArchcombo();
+	afx_msg void OnClickedButtonStrucombo();
 };

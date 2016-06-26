@@ -7,9 +7,9 @@
 #include "MateDlg.h"
 #include "afxdialogex.h"
 
-CString pgMaterial[NUM_MATERIAL] = {L"混凝土",L"钢材",L"砌体",L"木材",L"玻璃",L"石膏板",L"壁纸",L"瓷砖",L"大理石"};
-CString default_zh[NUM_MATERIAL] = {L"混凝土",L"金属",L"砌体",L"木材",L"玻璃",L"石膏",L"壁纸",L"瓷砖",L"大理石"};
-CString default_en[NUM_MATERIAL] = {L"Concrete",L"Metal",L"Masonry",L"Wood",L"Glass",L"Gypsum",L"Wallpaper",L"Ceramic",L"Marble"};
+CString pgMaterial[NUM_MATERIAL] = {L"混凝土",L"预应力砼",L"普通钢材",L"焊接钢",L"螺纹钢",L"钢-弗托立克",L"铸铁-挠性联轴器",L"铸铁-套筒联轴器",L"砌体",L"木材",L"玻璃",L"石膏板",L"壁纸",L"瓷砖",L"大理石",L"砼瓦片",L"黏土瓦片"};
+CString default_zh[NUM_MATERIAL] = {L"混凝土",L"预应力砼",L"钢",L"焊接钢",L"螺纹钢",L"带弗托立克钢管",L"带挠性联轴器铸铁",L"带套筒联轴器铸铁",L"砌体",L"木材",L"玻璃",L"石膏",L"壁纸",L"瓷砖",L"大理石",L"砼瓦片",L"黏土瓦片"};
+CString default_en[NUM_MATERIAL] = {L"Concrete",L"Prestress Concrete",L"Steel",L"Welded Steel",L"Threaded Steel",L"Vitaulic Steel",L"Cast Iron w/flexible couplings",L"Cast Iron w/bell and spigot couplings",L"Masonry",L"Wood",L"Glass",L"Gypsum",L"Wallpaper",L"Ceramic",L"Marble",L"Concrete Tile",L"Clay Tile"};
 CString byUser[NUM_MATERIAL];
 
 // CMateDlg 对话框
@@ -34,7 +34,7 @@ void CMateDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_EDIT_MATE, m_Emate);
-	DDV_MaxChars(pDX, m_Emate, 10);
+	DDV_MaxChars(pDX, m_Emate,MAX_MATERIAL_LENGTH);
 }
 
 

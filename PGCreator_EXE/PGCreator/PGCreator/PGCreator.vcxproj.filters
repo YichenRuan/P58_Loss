@@ -54,6 +54,12 @@
     <ClInclude Include="FireProDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MEPDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AddMEPDlg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PGCreator.cpp">
@@ -84,6 +90,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="FireProDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MEPDlg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AddMEPDlg.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

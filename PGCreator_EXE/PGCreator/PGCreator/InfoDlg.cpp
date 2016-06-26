@@ -16,7 +16,8 @@ IMPLEMENT_DYNAMIC(CInfoDlg, CDialog)
 CInfoDlg::CInfoDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CInfoDlg::IDD, pParent)
 {
-	SHGetSpecialFolderPath(this->GetSafeHwnd(),filePath,CSIDL_PERSONAL,0);
+	//SHGetSpecialFolderPath(this->GetSafeHwnd(),filePath,CSIDL_PERSONAL,0);
+	SHGetSpecialFolderPath(this->GetSafeHwnd(),filePath,CSIDL_DESKTOP,0);
 }
 
 CInfoDlg::~CInfoDlg()
